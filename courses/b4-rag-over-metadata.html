@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 4 · RAG over metadata - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 4 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 4 of 10</div>
+    <h1>RAG over metadata: <span class="accent">the right context, per question</span></h1>
+    <p class="sub">Static examples (b3) plateaued because the same K pairs went into every prompt. Tonight you fix the aim: store MANY pieces of context outside the prompt - DDL, documentation, verified question-SQL pairs - embed them, and retrieve only the slices relevant to each question. This is the Vanna pattern, the architecture behind Databricks Genie rooms, and the single biggest jump on the whole accuracy ladder. It is also plain RAG - just pointed at metadata instead of documents.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">Prereq: b1-b3 · bar starts at 42%</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap the plateau</span>
+      <span class="a2" style="flex:4">3-18 · The Vanna pattern &amp; what docs buy</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: flip Q7 and Q8</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where we are on the ladder</h2>
+    </div>
+    <p class="lede">Rung check. Baseline 8% (b1) → schema linking 25% (b2) → static examples <strong>5/12 · 42%</strong> (b3). What still fails is not pattern - it is MEANING: "active" (Q7), the monthly-rollup convention (Q8), date arithmetic (Q12). Tonight's lever is <strong>RAG over metadata</strong>: retrieval-augmented generation whose corpus is your database's knowledge, not web pages. Target: <strong>7/12 · 58%</strong>. Thesis unchanged - the model is not the product, context is. Tonight context finally gets a delivery system.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The three-collection Vanna pattern (DDL + documentation + question-SQL pairs → embed → retrieve top-k → assemble the prompt), the reason documentation fixes failures no schema or example ever could - business vocabulary lives nowhere else - a working retrieval rung on DaybreakGPT, and the recognition reflex: Genie rooms, Cortex semantic context, and every "chat with your data" product you will ever evaluate are this same pattern productized.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail</strong>
+      The "model" in tonight's playgrounds is a deterministic simulation built for teaching: with the RAG lever off it makes the characteristic vocabulary and convention mistakes real LLMs make; with it on, the retrieved context lands and the query changes. The SQL genuinely executes against the Daybreak database in your browser - right and wrong are measured by execution, never asserted.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE VANNA PATTERN ============ -->
+  <section class="section" id="vanna-pattern">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Vanna architecture</span>
+      <h2>The Vanna pattern: train on three collections <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Vanna - the most-starred open-source text-to-SQL framework, whose full story (including its 2026 archiving) waits in b9 - made one architectural decision that the whole field then converged on. You "train" the system not by tuning the model but by loading three collections into a vector store. At question time, you retrieve the nearest slices of each and assemble the prompt fresh.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three collections flow into a vector store, top-k slices are retrieved per question, and a prompt is assembled">
+        <style>
+          .b4aT { font: 700 13.5px Inter, sans-serif; fill: #FFFFFF; }
+          .b4aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .b4aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b4aC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b4aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b4aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b4aArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b4ah1); }
+        </style>
+        <defs>
+          <marker id="b4ah1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b4aH" x="30" y="34">Train once on three collections - retrieve per question forever</text>
+        <rect x="30" y="58" width="180" height="52" rx="10" fill="#003B57"/>
+        <text class="b4aT" x="44" y="80">1 · DDL</text>
+        <text class="b4aS" x="44" y="98">CREATE TABLE texts</text>
+        <rect x="30" y="122" width="180" height="52" rx="10" fill="#0F80CC"/>
+        <text class="b4aT" x="44" y="144">2 · Documentation</text>
+        <text class="b4aS" x="44" y="162">"active = no cancel date"</text>
+        <rect x="30" y="186" width="180" height="52" rx="10" fill="#3DA0E3"/>
+        <text class="b4aT" x="44" y="208">3 · Question-SQL pairs</text>
+        <text class="b4aS" x="44" y="226">b3's examples, many more</text>
+        <path class="b4aArr" d="M210,84 C250,84 250,140 278,144"/>
+        <path class="b4aArr" d="M210,148 L278,148"/>
+        <path class="b4aArr" d="M210,212 C250,212 250,156 278,152"/>
+        <rect x="280" y="118" width="170" height="62" rx="10" fill="#7C3AED"/>
+        <text class="b4aT" x="294" y="142">Vector store</text>
+        <text class="b4aS" x="294" y="160">every chunk embedded</text>
+        <path class="b4aArr" d="M450,149 L498,149"/>
+        <rect x="500" y="118" width="170" height="62" rx="10" fill="#7C3AED"/>
+        <text class="b4aT" x="514" y="142">Retrieve top-k</text>
+        <text class="b4aS" x="514" y="160">nearest to the question</text>
+        <path class="b4aArr" d="M670,149 L718,149"/>
+        <rect x="720" y="118" width="130" height="62" rx="10" fill="#003B57"/>
+        <text class="b4aT" x="734" y="142">Assemble</text>
+        <text class="b4aS" x="734" y="160">the prompt</text>
+        <rect x="500" y="46" width="170" height="44" rx="10" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b4aC" x="514" y="65">"How many active</text>
+        <text class="b4aC" x="514" y="81">subscriptions?"</text>
+        <path class="b4aArr" d="M585,90 L585,116"/>
+        <text class="b4aX" x="500" y="216">Violet = the AI stages (embedding, similarity</text>
+        <text class="b4aX" x="500" y="234">search). Everything else is plain plumbing.</text>
+        <text class="b4aC" x="30" y="266">Vanna's reported jump on their own workloads: static examples 20-60% → RAG-retrieved contextual examples ~80%.</text>
+        <text class="b4aX" x="30" y="288">Same pairs, same model - the only change is that each question now gets the slices that match IT.</text>
+        <rect x="30" y="308" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b4aN" x="54" y="320">"Training" here means loading collections, not tuning weights. Delete a bad chunk and it is untrained.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the Vanna pattern: three collections → vector store → retrieve top-k → prompt assembly</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why retrieval beats stuffing<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>b3 left us with a dilemma: more static pairs means better coverage but a fatter, noisier prompt on EVERY question. Retrieval dissolves it:</p>
+        <ul>
+          <li><strong>The corpus can be huge, the prompt stays small.</strong> Store 500 verified pairs and every doc note you have; each question retrieves maybe 5 chunks. Token budget solved.</li>
+          <li><strong>Coverage scales with the corpus, not the prompt.</strong> New question shape failing? Add one pair to the collection - no prompt surgery, no redeploy.</li>
+          <li><strong>Relevance is automatic.</strong> "How many active subscriptions" retrieves the subscriptions DDL, the doc line defining active, and the nearest pair - not the top-3-products example that would just be noise.</li>
+        </ul>
+        <p>Vanna's own research puts numbers on it: static examples landed at 20-60% depending on the model, RAG-retrieved contextual examples reached <strong>~80%</strong> - their reported measurements on their own workloads, so keep b8's skept-o-meter on, but the direction matches everything else in the field.</p>
+      </div>
+    </details>
+
+    <div class="prompt-box">
+      <span class="label">The assembled prompt for Q7 - every block below was RETRIEVED, not hard-coded</span>
+You are a SQL expert. Write one SQLite query. Return only SQL.
+
+[retrieved DDL - nearest table]
+CREATE TABLE subscriptions (sub_id INTEGER PRIMARY KEY,
+  customer_id INTEGER, product_id INTEGER, start_date TEXT,
+  cancel_date TEXT, monthly_qty INTEGER);
+
+[retrieved documentation - nearest doc chunks]
+- An ACTIVE subscription is one with cancel_date IS NULL.
+- Dates are stored as TEXT 'YYYY-MM-DD'; monthly rollups use
+  strftime('%Y-%m', ...); date math uses date(x, '+30 days').
+
+[retrieved example - nearest verified pair]
+Q: How many customers have never cancelled anything?
+SQL: SELECT COUNT(DISTINCT customer_id) FROM subscriptions
+     WHERE cancel_date IS NULL;
+
+Question: How many active subscriptions do we have?
+    </div>
+  </section>
+
+  <!-- ============ PART 2: WHAT DOCS BUY YOU ============ -->
+  <section class="section" id="docs">
+    <div class="section-kicker">
+      <span class="klabel">Part 2</span>
+      <h2>What documentation buys you: the vocabulary bridge <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Of the three collections, documentation is the one nothing earlier on the ladder could substitute for. Business vocabulary - the words your users actually ask in - appears NOWHERE in the schema. No schema dump and no query pattern carries it. Somebody has to write it down once; retrieval delivers it forever.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The schema has no word active; a documentation chunk bridges business vocabulary to columns">
+        <style>
+          .b4bT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b4bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b4bC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b4bM { font: 400 12px 'SF Mono', Menlo, monospace; fill: #10222E; }
+          .b4bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b4bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b4bArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b4bh1); }
+        </style>
+        <defs>
+          <marker id="b4bh1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b4bH" x="30" y="36">The vocabulary gap - and the one collection that bridges it</text>
+        <rect x="30" y="60" width="380" height="24" rx="6" fill="#003B57"/>
+        <text class="b4bT" x="44" y="77">What the schema says</text>
+        <rect x="30" y="84" width="380" height="130" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b4bM" x="44" y="108">subscriptions(sub_id, customer_id,</text>
+        <text class="b4bM" x="60" y="126">product_id, start_date,</text>
+        <text class="b4bM" x="60" y="144">cancel_date, monthly_qty)</text>
+        <text class="b4bC" x="44" y="172">The word "active" appears in zero tables,</text>
+        <text class="b4bC" x="44" y="190">zero columns, zero values. Users say it daily.</text>
+        <rect x="470" y="60" width="380" height="24" rx="6" fill="#0F80CC"/>
+        <text class="b4bT" x="484" y="77">What the documentation says</text>
+        <rect x="470" y="84" width="380" height="130" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b4bC" x="484" y="108">"An active subscription has</text>
+        <text class="b4bM" x="484" y="126">cancel_date IS NULL"          → Q7</text>
+        <text class="b4bC" x="484" y="150">"Monthly rollups use</text>
+        <text class="b4bM" x="484" y="168">strftime('%Y-%m', ...)"       → Q8</text>
+        <text class="b4bM" x="484" y="192">"date(x, '+30 days')"         → Q12</text>
+        <path class="b4bArr" d="M410,148 L468,148"/>
+        <text class="b4bX" x="30" y="244">Without the right-hand chunks the model guesses: count ALL subscriptions, group by DAY, invent a helper column.</text>
+        <text class="b4bX" x="30" y="262">All three guesses are wrong; two of the three are silent. One written sentence each prevents them.</text>
+        <rect x="30" y="286" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b4bN" x="54" y="298">Rule of thumb: every word in a golden question that is missing from the schema needs a doc chunk.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - business vocabulary lives in documentation, not in the schema</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Tonight's three targets, one doc chunk each<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Question</th><th>Fails without docs</th><th>The chunk that fixes it</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Q7</strong> active subscriptions</td><td>Counts every subscription ever - silent</td><td>active = <code>cancel_date IS NULL</code></td></tr>
+            <tr><td><strong>Q8</strong> monthly orders, Q1</td><td>Groups by day, not month - silent</td><td>dates are TEXT; monthly rollups use <code>strftime('%Y-%m', ...)</code></td></tr>
+            <tr><td><strong>Q12</strong> order within 30 days</td><td>Hallucinates a helper column - loud</td><td>date math uses <code>date(x, '+30 days')</code></td></tr>
+          </tbody>
+        </table>
+        <p>Notice what docs do NOT fix: Q4 and Q11 still need the DEFINITION of revenue - a metric contract, which is stronger than a doc sentence and gets its own session (b5). And Q12, as you will see in the demo, trades its loud failure for a different loud one. The ladder never lets you skip a rung.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where doc chunks come from in a real team<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Your data catalog</strong> - column descriptions in DataHub, OpenMetadata, or Unity Catalog are already doc chunks; RAG is finally the tool that makes filling them in pay off.</li>
+          <li><strong>Onboarding docs and wiki pages</strong> - the "how we define things" page every team has, half-finished. Chunk it.</li>
+          <li><strong>Slack archaeology</strong> - the thread where someone asked "wait, what counts as active?" and a senior analyst answered. That answer is a doc chunk.</li>
+          <li><strong>Failure mining</strong> - every silent failure your golden set catches names a missing chunk. Write the sentence, add it to the collection, re-run. That loop is b8's whole workflow.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: RAG YOU ALREADY KNOW ============ -->
+  <section class="section" id="rag-elsewhere">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers Genie room anatomy (light) + learn-rag cross-ref (light)</span>
+      <h2>You have seen this RAG before - and you will see it in every vendor <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">If you took the learn-rag course, tonight should feel familiar: embed a corpus, retrieve top-k by similarity, assemble a prompt. Identical mechanics - the only difference is the corpus. Document RAG retrieves passages to ANSWER from; metadata RAG retrieves schema, definitions, and examples to WRITE SQL from. One skill, two aims.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Spot the pattern in the products<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Once you know the three-collection shape you cannot unsee it in the commercial field:</p>
+        <ul>
+          <li><strong>Databricks Genie rooms</strong> are the pattern productized: a curated space over Unity Catalog metadata (collection 1), plain-text curator instructions (collection 2), and example SQL queries (collection 3) - retrieved per question. Documented limits are telling: max 30 tables per space, recommendation 5 or fewer - curated small corpora beat everything-dumps, exactly the b3 lesson.</li>
+          <li><strong>Snowflake Cortex Analyst</strong> leans harder on structured definitions - a YAML semantic model - which is really b5's rung; more on that next session.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The Genie room that went 8/15 → 15/15.</strong> Databricks' own published walkthrough of setting up a Genie space starts with a fresh room scoring 8 out of 15 on its benchmark questions. The fix was not a model upgrade: curators added instructions ("active means no cancel date" style sentences) and example queries, iterated against the benchmark, and reached 15/15. That is tonight's demo, run by a vendor, on their product: collections in, accuracy out. The curation loop took real human weeks - the "curation tax" the leader track (a4) prices out.</p>
+        </div>
+        <p>Cross-reference: the <a href="https://phoebefu6.github.io/learn-with-phoebe/">learn-rag course on the Learn with Phoebe hub ↗</a> builds the retrieval mechanics themselves - embeddings, chunking, top-k, and a live playground. Tonight uses them; that course explains them.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Retrieve the meaning <span class="tag demo">★ 14 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">DaybreakGPT below has schema linking and few-shot examples ON (b3's rung) and RAG over metadata OFF. Three questions loaded: the two vocabulary traps and one that teaches the ladder's favorite lesson twice.</p>
+
+    <div class="steps">
+      <div class="step"><p>Ask <strong>Q7</strong> (active subscriptions) with RAG off. It counts every subscription ever - runs fine, plausible, <strong>silent</strong>. "Active" is not in the schema, so nothing on rungs 1-3 could have helped.</p></div>
+      <div class="step"><p>Ask <strong>Q8</strong> (monthly orders for Q1). Grouped by DAY, not month - silent again. The strftime convention lives in documentation nobody retrieved.</p></div>
+      <div class="step"><p>Toggle <strong>RAG over metadata ON</strong>. Re-ask Q7 and Q8 - both flip to matching gold. The doc chunks landed in the prompt.</p></div>
+      <div class="step"><p>Now ask <strong>Q12</strong> both ways. RAG off: a <strong>loud</strong> error - it hallucinates a first_order_deadline helper column. RAG on: the date-math doc fixes THAT, and the model promptly writes <code>DATEDIFF</code> - T-SQL, not SQLite. A DIFFERENT loud error. Dialect slips survive good context; catching and retrying them is b6's self-correction loop.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="schema,examples,rag" data-on="schema,examples" data-q="7,8,12"></div>
+
+    <div class="callout tip">
+      <strong>Check it against real SQL</strong>
+      Don't take the verdict's word for it. Here is the gold Q7 on the same live database - delete the WHERE line and re-run to reproduce the silent all-subscriptions count by hand.
+    </div>
+    <div class="sqlbox" data-caption="Gold Q7: active = cancel_date IS NULL. Delete the WHERE line to see the number the model reports without docs.">
+      <pre class="sql-src">SELECT COUNT(*) AS active_subs
+FROM subscriptions
+WHERE cancel_date IS NULL;</pre>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Re-run the golden set <span class="tag demo">★ 8 min · measure the rung</span></h2>
+    </div>
+    <p class="lede">Same 12 questions, one more lever on. Last session ended at 5/12 - 42%. Run it, then read the misses as carefully as the hits: every remaining failure names a future session.</p>
+
+    <div class="t2s" data-mode="scorecard" data-levers="schema,examples,rag" data-on="schema,examples,rag"></div>
+
+    <div class="callout win">
+      <strong>★ The number to remember</strong>
+      7/12 - 58%, up from 42%. Q7 and Q8 flipped on retrieved documentation alone. Still failing: Q4, Q9, Q10, Q11 - all metric-definition problems that need a semantic layer (b5) - and Q12's dialect slip waiting for self-correction (b6). We are past half on context engineering alone, and the model has still never changed.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 20-30 min total</span></h2>
+    </div>
+    <ul>
+      <li>In the Demo 1 playground, run Q12 with RAG off and on, and write down both error messages. Two different loud failures from the same question - which lever fixes each?</li>
+      <li>Reproduce Q8's trap in the live SQL editor: group orders by <code>order_date</code>, then by <code>strftime('%Y-%m', order_date)</code>, and compare row counts.</li>
+      <li>Take the 5 golden questions you wrote for your own database back in b1. Underline every word that appears nowhere in that schema - then write the one-sentence doc chunk each word needs.</li>
+      <li>Sort your chunks into the three Vanna collections: is it DDL, documentation, or a question-SQL pair? Notice which pile is biggest - for most teams it is documentation, and it starts empty.</li>
+      <li>Optional: revisit the learn-rag course's retrieval playground and ask yourself what changes if the corpus is your warehouse metadata instead of documents. (Answer: almost nothing. That is the point.)</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into runnable sessions; papers and leaderboards stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Vanna architecture (DDL + docs + question-SQL pairs, RAG-retrieved)</span><span class="note">Parts 1-2 · the three-collection pattern and their reported 20-60% → ~80% jump; the framework's full story (and archiving) in b9</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Databricks Genie room anatomy</span><span class="note">Part 3 · instructions + example queries as productized metadata RAG; 8/15 → 15/15 curation walkthrough; curation tax priced in a4</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">learn-rag course (Learn with Phoebe)</span><span class="note">Part 3 · same retrieval mechanics, different corpus - embeddings and chunking explained there, used here</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · What are the three collections a Vanna-pattern system trains on?</p>
+      <button class="qopt" type="button">A · Model weights, embeddings, and prompts</button>
+      <button class="qopt" type="button">B · Tables, views, and stored procedures</button>
+      <button class="qopt" type="button">C · DDL, documentation, and verified question-SQL pairs</button>
+      <p class="qwhy">Schema text (DDL), business-meaning sentences (documentation), and worked examples (question-SQL pairs) - all embedded in a vector store and retrieved per question. "Training" loads collections; the model's weights never change.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Why does documentation fix "how many active subscriptions" when a perfect schema dump cannot?</p>
+      <button class="qopt" type="button">A · "Active" is business vocabulary that appears nowhere in any table, column, or value - only a written definition maps it to cancel_date IS NULL</button>
+      <button class="qopt" type="button">B · Documentation is shorter than DDL, so the model reads it more carefully</button>
+      <button class="qopt" type="button">C · The schema is usually out of date, while documentation is always current</button>
+      <p class="qwhy">The vocabulary gap: users ask in business words, the schema speaks in column names, and no amount of schema detail bridges them. One doc sentence does - and retrieval delivers it to exactly the questions that need it.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · Same example pairs, same model - why do RETRIEVED examples outperform the same examples pasted statically?</p>
+      <button class="qopt" type="button">A · Retrieved examples are rewritten by the embedding model into cleaner SQL</button>
+      <button class="qopt" type="button">B · Each question gets the pairs that match IT, from a corpus far larger than any prompt could hold - relevance up, noise down, coverage scales with the corpus</button>
+      <button class="qopt" type="button">C · Retrieval caches the answers, so repeated questions are free</button>
+      <p class="qwhy">Static prompting pays for every pair on every question and covers only the shapes you picked. Retrieval stores hundreds of pairs and delivers the nearest few per question - Vanna's reported band moves from 20-60% to ~80% on exactly this change.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 4 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The lever</b><span>RAG over metadata: embed DDL + docs + question-SQL pairs, retrieve top-k per question, assemble the prompt.</span></div>
+      <div class="cheat-item"><b>The three collections</b><span>DDL (schema text) · documentation (business meaning) · verified question-SQL pairs (patterns, b3 at scale).</span></div>
+      <div class="cheat-item"><b>"Training"</b><span>Loading collections into a vector store - no weights touched. Delete a bad chunk and it is untrained.</span></div>
+      <div class="cheat-item"><b>The vocabulary gap</b><span>Business words ("active", "churn") appear nowhere in schemas. Only doc chunks bridge them (Q7, Q8, Q12).</span></div>
+      <div class="cheat-item"><b>Retrieval vs stuffing</b><span>Corpus can be huge, prompt stays small; coverage scales by adding chunks, not prompt surgery.</span></div>
+      <div class="cheat-item"><b>The jump</b><span>Vanna's reported ladder: static examples 20-60% → retrieved contextual examples ~80%. Biggest single rung.</span></div>
+      <div class="cheat-item"><b>Productized twins</b><span>Genie rooms = metadata + instructions + example queries, retrieved per question. Rec: 5 tables or fewer.</span></div>
+      <div class="cheat-item"><b>The rung</b><span>5/12 → 7/12 (42% → 58%). Left: metric definitions (b5) and Q12's DATEDIFF dialect slip (b6).</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 4 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b3-few-shot-examples.html">← Prev: Few-shot examples</a> &nbsp;·&nbsp; <a href="../index.html">All sessions</a> &nbsp;·&nbsp; <a href="b5-semantic-layer.html">Next: The semantic layer →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

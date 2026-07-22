@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>learn text-to-sql with phoebe - English in, SQL out</title>
+<link rel="stylesheet" href="assets/style.css?v=1">
+<style>
+  .stats-row { display: flex; gap: 2.4rem; margin-top: 1.5rem; flex-wrap: wrap; }
+  .stat b { display: block; font-size: 2.1rem; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: .72rem; opacity: .85; text-transform: uppercase; letter-spacing: .09em; font-weight: 600; }
+
+  .course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .course-card {
+    border: 1px solid var(--hairline);
+    border-top: 4px solid var(--diff, var(--indigo));
+    border-radius: var(--radius);
+    padding: 1.2rem 1.3rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    text-decoration: none;
+    color: var(--ink);
+    background: #fff;
+    transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+    position: relative;
+  }
+  .course-card:hover { border-color: var(--indigo-soft); border-top-color: var(--diff, var(--indigo)); box-shadow: 0 8px 28px rgba(15,128,204,.12); transform: translateY(-3px); }
+  .course-card .cicon { font-size: 1.7rem; line-height: 1; }
+  .course-card .cnum { font-size: .72rem; font-weight: 700; color: var(--indigo); text-transform: uppercase; letter-spacing: .1em; }
+  .course-card h3 { font-size: 1.05rem; font-weight: 800; line-height: 1.3; }
+  .course-card p { font-size: .85rem; color: var(--muted); flex: 1; }
+  .course-card .meta { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+  .diff-legend { display: flex; gap: 1rem; margin-top: 1.6rem; font-size: .74rem; color: var(--muted); font-weight: 600; flex-wrap: wrap; }
+  .diff-legend i { display: inline-block; width: .85rem; height: .35rem; border-radius: 999px; margin-right: .35rem; vertical-align: middle; }
+
+  .paths { margin-top: 2.6rem; }
+  .paths h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .3rem; }
+  .paths .plede { color: var(--muted); font-size: .92rem; margin-bottom: .8rem; }
+  .path { display: flex; gap: .55rem; align-items: center; padding: .75rem 0; border-bottom: .5px solid var(--hairline); flex-wrap: wrap; }
+  .path:last-child { border-bottom: none; }
+  .path b { min-width: 15.5rem; font-size: .9rem; }
+  .path .pstep { background: var(--indigo-50); color: var(--indigo); border-radius: 999px; padding: .16rem .68rem; font-weight: 700; font-size: .8rem; text-decoration: none; transition: all .12s ease; }
+  .path .pstep:hover { background: var(--indigo); color: #fff; }
+  .path .parr { color: var(--faint); font-weight: 700; }
+
+  .mm-section { margin-top: 1.6rem; }
+  .mm-section h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .2rem; }
+  .mm-section .mm-lede { color: var(--muted); font-size: .92rem; margin-bottom: .4rem; }
+  .mm-wrap { border: 1px solid var(--hairline); border-radius: var(--radius); background: linear-gradient(180deg,#fff,#F1F8FC); padding: .6rem; overflow-x: auto; }
+  .mm-svg { width: 100%; height: auto; display: block; max-width: 60rem; margin: 0 auto; min-width: 34rem; }
+  .mm-link { cursor: pointer; text-decoration: none; }
+  .mm-node rect { transition: opacity .15s ease, filter .15s ease; }
+  .mm-node text { pointer-events: none; }
+  .mm-link:hover .mm-node rect { filter: brightness(1.06); }
+  .mm-edge { transition: opacity .15s ease; }
+
+  .family { margin-top: 2.6rem; }
+  .family h2 { font-size: 1.3rem; font-weight: 800; margin-bottom: .3rem; }
+  .family .plede { color: var(--muted); font-size: .92rem; margin-bottom: .8rem; }
+  .family .fam-row { display: flex; gap: .55rem; flex-wrap: wrap; }
+  .family .fam-row a { background: var(--indigo-50); color: var(--indigo); border-radius: 999px; padding: .3rem .85rem; font-weight: 700; font-size: .82rem; text-decoration: none; transition: all .12s ease; }
+  .family .fam-row a:hover { background: var(--indigo); color: #fff; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Two tracks · 16 sessions</div>
+    <h1>Ask your data <span class="accent">in plain English</span></h1>
+    <p class="sub">A two-track course that builds DaybreakGPT - a text-to-SQL agent over the Daybreak coffee warehouse you may know from learn-sql (this is the sequel, same database). A leader track teaches executives to judge vendors, benchmarks and adoption plans; a builder track climbs from a naive baseline that barely works to a system that clears the whole golden set - one context lever per session. The thesis both tracks share: the model is not the product - context is. by Phoebe Fu.</p>
+    <div class="stats-row">
+      <div class="stat"><b data-count="16">16</b><span>sessions</span></div>
+      <div class="stat"><b data-count="12">12</b><span>golden questions</span></div>
+      <div class="stat"><b data-count="8">8</b><span>% baseline accuracy</span></div>
+      <div class="stat"><b data-count="100">100</b><span>% after 5 context levers</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="section mm-section">
+    <h2>The knowledge map 🧠</h2>
+    <p class="mm-lede">Both tracks plus the five context levers at a glance - hover a branch to spotlight it, click any node to jump in.</p>
+    <div class="mm-wrap"><div id="mindmap"></div></div>
+  </section>
+
+  <section class="section">
+    <div class="paths" style="margin-top:2rem">
+      <h2>Leader track 🤝 <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· for executives and data leaders · 6 x 45 min · no code to write</span></h2>
+      <p class="plede">Thinking mode: why the self-serve dream keeps failing, how to read vendor accuracy claims, what the curation tax really costs, and a pilot playbook you can run - each session ends with questions to ask your data team.</p>
+    </div>
+    <div class="course-grid">
+      <a class="course-card" href="courses/a1-self-serve-dream.html" style="--diff:#34D399">
+        <span class="cicon">🔮</span>
+        <span class="cnum">Leader 1 · easy</span>
+        <h3>The self-serve dream</h3>
+        <p>Why "just ask your data" is the oldest promise in BI, the 2026 agent adoption wave, and the demo-vs-production gap behind agent washing.</p>
+        <span class="meta"><span class="pill amber">▶ Leaders start here</span><span class="pill light">45 min</span></span>
+      </a>
+      <a class="course-card" href="courses/a2-accuracy-cliff.html" style="--diff:#34D399">
+        <span class="cicon">📉</span>
+        <span class="cnum">Leader 2 · easy</span>
+        <h3>The accuracy cliff</h3>
+        <p>The benchmark ladder from WikiSQL to Spider 2.0, the 86% to 10% cliff, and why silent failure - a plausible wrong answer - is the real risk.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/a3-vendor-landscape.html" style="--diff:#FBBF24">
+        <span class="cicon">🗺️</span>
+        <span class="cnum">Leader 3 · moderate</span>
+        <h3>The vendor landscape</h3>
+        <p>Warehouse-native (Genie, Cortex Analyst) vs BI copilots vs AI analysts - the build-vs-buy axes, and why every vendor claims 90%+.</p>
+        <span class="meta"><span class="pill light">45 min</span></span>
+      </a>
+      <a class="course-card" href="courses/a4-curation-tax.html" style="--diff:#FBBF24">
+        <span class="cicon">🧾</span>
+        <span class="cnum">Leader 4 · moderate</span>
+        <h3>The curation tax</h3>
+        <p>Nothing works out of the box: Genie rooms, Cortex YAML, the semantic layer as the biggest accuracy lever - and who on your team pays the tax.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/a5-governance-trust.html" style="--diff:#FB923C">
+        <span class="cicon">🛡️</span>
+        <span class="cnum">Leader 5 · deeper</span>
+        <h3>Governance + trust</h3>
+        <p>Row-level security with an LLM in the loop, audit trails, hallucinated-but-plausible answers, and how to read benchmark claims skeptically.</p>
+        <span class="meta"><span class="pill light">45 min</span></span>
+      </a>
+      <a class="course-card" href="courses/a6-adoption-playbook.html" style="--diff:#FB923C">
+        <span class="cicon">🧭</span>
+        <span class="cnum">Leader 6 · deeper</span>
+        <h3>The adoption playbook</h3>
+        <p>Scope five tables, write 20 golden questions, measure with your own set, curate metadata first - the pilot-to-expand loop, and when to say no.</p>
+        <span class="meta"><span class="pill light">45 min</span></span>
+      </a>
+    </div>
+
+    <div class="paths">
+      <h2>Builder track 🛠️ <span style="font-size:.85rem;font-weight:600;color:var(--muted)">· build DaybreakGPT · 10 x 45 min · runs live in your browser</span></h2>
+      <p class="plede">One running project: DaybreakGPT, a text-to-SQL agent over the Daybreak coffee warehouse. Every session adds one context lever and re-measures the same 12-question golden set - real SQLite plus a simulated model, live on every page.</p>
+    </div>
+    <div class="course-grid">
+      <a class="course-card" href="courses/b1-baseline-agent.html" style="--diff:#34D399">
+        <span class="cicon">🚪</span>
+        <span class="cnum">Builder 1 · easy</span>
+        <h3>Meet the problem</h3>
+        <p>Dump the schema into a prompt and watch it fail: the anatomy of every text-to-SQL system, and your baseline number on the golden set.</p>
+        <span class="meta"><span class="pill amber">▶ Start here</span><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b2-schema-linking.html" style="--diff:#34D399">
+        <span class="cicon">🔗</span>
+        <span class="cnum">Builder 2 · easy</span>
+        <h3>Schema linking</h3>
+        <p>Map question terms to the right tables and columns - 81% of real-world failures are schema errors, so this lever comes first.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b3-few-shot-examples.html" style="--diff:#34D399">
+        <span class="cicon">🎯</span>
+        <span class="cnum">Builder 3 · easy</span>
+        <h3>Few-shot examples</h3>
+        <p>Static question-SQL pairs in the prompt lift you into the 20-60% band - and example quality beats example quantity.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b4-rag-over-metadata.html" style="--diff:#FBBF24">
+        <span class="cicon">📚</span>
+        <span class="cnum">Builder 4 · moderate</span>
+        <h3>RAG over metadata</h3>
+        <p>Retrieve the right DDL, docs and example pairs per question - the Vanna pattern that pushed real deployments toward 80%.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b5-semantic-layer.html" style="--diff:#FBBF24">
+        <span class="cicon">🧬</span>
+        <span class="cnum">Builder 5 · moderate</span>
+        <h3>The semantic layer</h3>
+        <p>Metric and join definitions as a contract: fail loudly instead of silently, with +17-23pp of measured accuracy evidence.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b6-self-correction.html" style="--diff:#FB923C">
+        <span class="cicon">🔁</span>
+        <span class="cnum">Builder 6 · deeper</span>
+        <h3>Self-correction</h3>
+        <p>Execute, catch the error, regenerate - the DIN-SQL move that turns a one-shot generator into an agent on Daybreak.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b7-multi-candidate.html" style="--diff:#FB923C">
+        <span class="cicon">🎲</span>
+        <span class="cnum">Builder 7 · deeper</span>
+        <h3>Multi-candidate + selection</h3>
+        <p>Generate N candidates, execute and score them all, pick the winner - how Salesforce went from 50% to 80% in production.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b8-evaluation.html" style="--diff:#FB923C">
+        <span class="cicon">📏</span>
+        <span class="cnum">Builder 8 · deeper</span>
+        <h3>Evaluating your agent</h3>
+        <p>Execution accuracy vs exact match, golden sets, and why benchmark annotation errors make your own eval the real deliverable.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b9-framework-tour.html" style="--diff:#FBBF24">
+        <span class="cicon">🧰</span>
+        <span class="cnum">Builder 9 · moderate</span>
+        <h3>The framework tour</h3>
+        <p>Vanna (archived - a market lesson in itself), WrenAI, DB-GPT, SQLCoder, LangChain agents - four architecture axes and a which-when tree.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+      <a class="course-card" href="courses/b10-capstone-production.html" style="--diff:#F87171">
+        <span class="cicon">🚀</span>
+        <span class="cnum">Builder 10 · capstone</span>
+        <h3>Capstone + production reality</h3>
+        <p>Run the full DaybreakGPT stack, then face production: governance, cost, drift, schema evolution, and where the field goes next.</p>
+        <span class="meta"><span class="pill light">45 min</span><span class="pill ai">Live playground</span></span>
+      </a>
+    </div>
+    <div class="diff-legend">
+      <span><i style="background:#34D399"></i>easy</span>
+      <span><i style="background:#FBBF24"></i>moderate</span>
+      <span><i style="background:#FB923C"></i>deeper</span>
+      <span><i style="background:#F87171"></i>capstone</span>
+    </div>
+
+    <div class="paths">
+      <h2>Choose your path 🗺️</h2>
+      <p class="plede">Two doors, one warehouse. Leaders judge the field without writing a line; builders climb the accuracy ladder one lever at a time.</p>
+      <div class="path"><b>🤝 The executive (judge &amp; decide)</b>
+        <a class="pstep" href="courses/a1-self-serve-dream.html">a1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a2-accuracy-cliff.html">a2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a3-vendor-landscape.html">a3</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a4-curation-tax.html">a4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a5-governance-trust.html">a5</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a6-adoption-playbook.html">a6</a>
+      </div>
+      <div class="path"><b>🛠️ The hands-on builder</b>
+        <a class="pstep" href="courses/b1-baseline-agent.html">b1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b2-schema-linking.html">b2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b3-few-shot-examples.html">b3</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b4-rag-over-metadata.html">b4</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b5-semantic-layer.html">b5</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b6-self-correction.html">b6</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b7-multi-candidate.html">b7</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b8-evaluation.html">b8</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b9-framework-tour.html">b9</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b10-capstone-production.html">b10</a>
+      </div>
+      <div class="path"><b>🚀 The full journey (lead AND build)</b>
+        <a class="pstep" href="courses/a1-self-serve-dream.html">a1</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a2-accuracy-cliff.html">a2</a><span class="parr">→</span>
+        <a class="pstep" href="courses/b1-baseline-agent.html">b1-b10</a><span class="parr">→</span>
+        <a class="pstep" href="courses/a6-adoption-playbook.html">a6</a>
+      </div>
+    </div>
+
+    <div class="family">
+      <h2>Part of the family 👨‍👩‍👧‍👦</h2>
+      <p class="plede">DaybreakGPT stands on three sibling courses: learn-sql is the prerequisite (same Daybreak database), learn-rag powers session b4, and learn-evals powers b8.</p>
+      <div class="fam-row">
+        <a href="https://phoebefu6.github.io/learn-sql-with-phoebe/">🗄️ learn-sql - the prerequisite</a>
+        <a href="https://phoebefu6.github.io/learn-rag-with-phoebe/">📚 learn-rag</a>
+        <a href="https://phoebefu6.github.io/learn-evals-with-phoebe/">📏 learn-evals</a>
+        <a href="https://phoebefu6.github.io/learn-langchain-with-phoebe/">⛓️ learn-langchain</a>
+        <a href="https://phoebefu6.github.io/learn-with-phoebe/">📚 all courses - the hub ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a> · sequel to learn-sql · runs on SQLite via sql.js + a simulated model for teaching</span>
+  </footer>
+</main>
+
+<script>
+window.MINDMAP_DATA = {
+  title: "Text-to-SQL",
+  centerColor: "#003B57",
+  sessions: [
+    { label: "The self-serve\ndream", href: "courses/a1-self-serve-dream.html", color: "#34D399",
+      concepts: [
+        { label: "Oldest promise in BI", href: "courses/a1-self-serve-dream.html" },
+        { label: "Demo vs production", href: "courses/a1-self-serve-dream.html" } ] },
+    { label: "The accuracy\ncliff", href: "courses/a2-accuracy-cliff.html", color: "#34D399",
+      concepts: [
+        { label: "86% → 10% cliff", href: "courses/a2-accuracy-cliff.html" },
+        { label: "Silent vs loud failure", href: "courses/a2-accuracy-cliff.html" } ] },
+    { label: "The vendor\nlandscape", href: "courses/a3-vendor-landscape.html", color: "#FBBF24",
+      concepts: [
+        { label: "Genie vs Cortex", href: "courses/a3-vendor-landscape.html" },
+        { label: "Build vs buy", href: "courses/a3-vendor-landscape.html" } ] },
+    { label: "The curation\ntax", href: "courses/a4-curation-tax.html", color: "#FBBF24",
+      concepts: [
+        { label: "Nothing works raw", href: "courses/a4-curation-tax.html" },
+        { label: "Who pays the tax", href: "courses/a4-curation-tax.html" } ] },
+    { label: "Governance\n+ trust", href: "courses/a5-governance-trust.html", color: "#FB923C",
+      concepts: [
+        { label: "RLS with an LLM", href: "courses/a5-governance-trust.html" },
+        { label: "Plausible wrong answers", href: "courses/a5-governance-trust.html" } ] },
+    { label: "The adoption\nplaybook", href: "courses/a6-adoption-playbook.html", color: "#FB923C",
+      concepts: [
+        { label: "Scope small", href: "courses/a6-adoption-playbook.html" },
+        { label: "Pilot → expand", href: "courses/a6-adoption-playbook.html" } ] },
+    { label: "Meet the\nproblem", href: "courses/b1-baseline-agent.html", color: "#34D399",
+      concepts: [
+        { label: "Naive schema dump", href: "courses/b1-baseline-agent.html" },
+        { label: "Baseline number", href: "courses/b1-baseline-agent.html" } ] },
+    { label: "Schema\nlinking", href: "courses/b2-schema-linking.html", color: "#34D399",
+      concepts: [
+        { label: "Terms → tables", href: "courses/b2-schema-linking.html" },
+        { label: "81% schema errors", href: "courses/b2-schema-linking.html" } ] },
+    { label: "Few-shot\nexamples", href: "courses/b3-few-shot-examples.html", color: "#34D399",
+      concepts: [
+        { label: "Question-SQL pairs", href: "courses/b3-few-shot-examples.html" },
+        { label: "Quality > quantity", href: "courses/b3-few-shot-examples.html" } ] },
+    { label: "RAG over\nmetadata", href: "courses/b4-rag-over-metadata.html", color: "#FBBF24",
+      concepts: [
+        { label: "Retrieve per question", href: "courses/b4-rag-over-metadata.html" },
+        { label: "The Vanna pattern", href: "courses/b4-rag-over-metadata.html" } ] },
+    { label: "The semantic\nlayer", href: "courses/b5-semantic-layer.html", color: "#FBBF24",
+      concepts: [
+        { label: "Metrics as contract", href: "courses/b5-semantic-layer.html" },
+        { label: "Fail loudly", href: "courses/b5-semantic-layer.html" } ] },
+    { label: "Self-\ncorrection", href: "courses/b6-self-correction.html", color: "#FB923C",
+      concepts: [
+        { label: "Execute → retry", href: "courses/b6-self-correction.html" },
+        { label: "Agentic loop", href: "courses/b6-self-correction.html" } ] },
+    { label: "Multi-\ncandidate", href: "courses/b7-multi-candidate.html", color: "#FB923C",
+      concepts: [
+        { label: "Generate N, score, pick", href: "courses/b7-multi-candidate.html" },
+        { label: "50% → 80%", href: "courses/b7-multi-candidate.html" } ] },
+    { label: "Evaluating\nyour agent", href: "courses/b8-evaluation.html", color: "#FB923C",
+      concepts: [
+        { label: "Execution accuracy", href: "courses/b8-evaluation.html" },
+        { label: "Broken benchmarks", href: "courses/b8-evaluation.html" } ] },
+    { label: "The framework\ntour", href: "courses/b9-framework-tour.html", color: "#FBBF24",
+      concepts: [
+        { label: "Vanna · WrenAI · DB-GPT", href: "courses/b9-framework-tour.html" },
+        { label: "Which-when tree", href: "courses/b9-framework-tour.html" } ] },
+    { label: "Capstone +\nproduction", href: "courses/b10-capstone-production.html", color: "#F87171",
+      concepts: [
+        { label: "Full DaybreakGPT run", href: "courses/b10-capstone-production.html" },
+        { label: "Drift & governance", href: "courses/b10-capstone-production.html" } ] },
+    { label: "Context\nlevers", href: "courses/b2-schema-linking.html", color: "#7C3AED",
+      concepts: [
+        { label: "Schema linking", href: "courses/b2-schema-linking.html" },
+        { label: "Examples", href: "courses/b3-few-shot-examples.html" },
+        { label: "RAG", href: "courses/b4-rag-over-metadata.html" },
+        { label: "Semantic layer", href: "courses/b5-semantic-layer.html" },
+        { label: "Self-correction", href: "courses/b6-self-correction.html" } ] },
+    { label: "Golden set\n& eval", href: "courses/b8-evaluation.html", color: "#7C3AED",
+      concepts: [
+        { label: "12 golden questions", href: "courses/b1-baseline-agent.html" },
+        { label: "Measure every rung", href: "courses/b8-evaluation.html" } ] }
+  ]
+};
+</script>
+<script src="assets/mindmap.js?v=1"></script>
+<script src="assets/app.js?v=1"></script>
+</body>
+</html>

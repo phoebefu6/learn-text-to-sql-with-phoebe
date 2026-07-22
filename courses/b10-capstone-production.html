@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 10 · Capstone + production reality - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 10 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 10 of 10</div>
+    <h1>Capstone: <span class="accent">ship it, then keep it alive</span></h1>
+    <p class="sub">You built DaybreakGPT from an 8% schema-dump baseline to 100% on the golden set, one context lever at a time. Tonight is the victory lap and the reality check: the full ladder in one picture, then everything that changes the day real users and a real warehouse arrive - governance, cost, drift, scale - and the pilot playbook that keeps the number honest.</p>
+    <div class="chip-row">
+      <span class="chip level">🔴 Builder track · capstone</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-18 · The full ladder</span>
+      <span class="a3" style="flex:5">18-42 · Production reality + capstone run</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where the accuracy came from</h2>
+    </div>
+    <p class="lede">Ten sessions, one honest lesson: every point of accuracy you gained came from <strong>context</strong>, not from a bigger model. The model in every playground on this track never changed. What changed was what reached it - the right tables, worked examples, retrieved metadata, business definitions, and a retry loop. That is the whole discipline, and it is why the job title is context engineer.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The full accuracy ladder in one image you can redraw from memory, a clear map of the four things that break in production (governance, cost, drift, scale), a one-page pilot playbook that mirrors the leader track's a6, and your own set of next questions to answer with the sibling courses.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail</strong>
+      The model here is a deterministic teaching simulation - each golden question carries the characteristic failure a real LLM makes when a lever is missing, and the SQL genuinely runs against SQLite in your browser. Real models are noisier, but they fail in these shapes at the rates this track documented.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE LADDER ============ -->
+  <section class="section" id="ladder">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · recap of b1-b7</span>
+      <h2>The whole climb in one picture <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Here is DaybreakGPT's execution accuracy on the 12-question golden set as each lever switched on. Read it as your roadmap conversation with any data team: this is the order to add context, and roughly what each layer buys.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The accuracy ladder: 8 to 25 to 42 to 58 to 92 to 100 percent as levers switch on">
+        <style>
+          .b10sT { font: 700 13px Inter, sans-serif; fill: #10222E; }
+          .b10sP { font: 800 15px Inter, sans-serif; fill: #FFFFFF; }
+          .b10sL { font: 400 11px Inter, sans-serif; fill: #526472; }
+          .b10sN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b10sAx { stroke: #AEC4D2; stroke-width: 1.5; }
+        </style>
+        <line class="b10sAx" x1="60" y1="330" x2="850" y2="330"/>
+        <line class="b10sAx" x1="60" y1="60" x2="60" y2="330"/>
+        <text class="b10sL" x="20" y="66">100%</text>
+        <text class="b10sL" x="28" y="200">50%</text>
+        <text class="b10sL" x="38" y="334">0%</text>
+        <!-- bars: baseline blue, AI levers violet -->
+        <rect x="90" y="308" width="95" height="22" rx="4" fill="#003B57"/>
+        <text class="b10sP" x="112" y="324">8%</text>
+        <text class="b10sT" x="96" y="350">baseline</text>
+        <text class="b10sL" x="104" y="366">schema dump</text>
+        <rect x="215" y="263" width="95" height="67" rx="4" fill="#0F80CC"/>
+        <text class="b10sP" x="235" y="292">25%</text>
+        <text class="b10sT" x="220" y="350">+ schema</text>
+        <text class="b10sL" x="222" y="366">linking (b2)</text>
+        <rect x="340" y="217" width="95" height="113" rx="4" fill="#0F80CC"/>
+        <text class="b10sP" x="360" y="270">42%</text>
+        <text class="b10sT" x="344" y="350">+ examples</text>
+        <text class="b10sL" x="358" y="366">(b3)</text>
+        <rect x="465" y="187" width="95" height="143" rx="4" fill="#7C3AED"/>
+        <text class="b10sP" x="487" y="245">58%</text>
+        <text class="b10sT" x="480" y="350">+ RAG</text>
+        <text class="b10sL" x="470" y="366">metadata (b4)</text>
+        <rect x="590" y="98" width="95" height="232" rx="4" fill="#7C3AED"/>
+        <text class="b10sP" x="608" y="210">92%</text>
+        <text class="b10sT" x="588" y="350">+ semantic</text>
+        <text class="b10sL" x="592" y="366">layer (b5)</text>
+        <rect x="715" y="74" width="95" height="256" rx="4" fill="#7C3AED"/>
+        <text class="b10sP" x="733" y="200">100%</text>
+        <text class="b10sT" x="716" y="350">+ self-fix</text>
+        <text class="b10sL" x="716" y="366">(b6)</text>
+        <rect x="60" y="384" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b10sN" x="82" y="396">Blue = pre-LLM plumbing. Violet = the AI-era levers. Zero points came from a bigger model.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the full accuracy ladder, 8% to 100% on the golden set</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Which lever earned its keep<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The marginal jumps tell you where to spend effort on a real project:</p>
+        <table class="clean">
+          <thead><tr><th>Lever</th><th>Jump</th><th>What it fixed</th></tr></thead>
+          <tbody>
+            <tr><td>Schema linking (b2)</td><td>+17</td><td>Hallucinated tables and columns - the loud errors</td></tr>
+            <tr><td>Few-shot examples (b3)</td><td>+17</td><td>Wrong query shapes (COUNT vs SUM, group-then-average)</td></tr>
+            <tr><td>RAG over metadata (b4)</td><td>+16</td><td>Business vocabulary absent from the schema</td></tr>
+            <tr><td><strong>Semantic layer (b5)</strong></td><td><strong>+34</strong></td><td>Metric definitions - the biggest single lever on this set</td></tr>
+            <tr><td>Self-correction (b6)</td><td>+8</td><td>The last loud error (a dialect slip)</td></tr>
+          </tbody>
+        </table>
+        <p>The semantic layer dominated because most of Daybreak's remaining failures were silent metric errors - revenue that quietly counted cancelled orders, "churn" that meant the wrong table. That matches the published evidence: a semantic layer was the strongest measured lever in the field, not a bigger model.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The order of operations is the lesson.</strong> A team that jumps straight to "let's fine-tune a SQL model" skips the four cheaper levers that did most of the work here. The professional sequence is boring and effective: get the schema context right, add examples, retrieve metadata, define your metrics, then add a retry loop. Reach for a custom model only when all five are exhausted - which, in practice, is rarely.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: PRODUCTION REALITY ============ -->
+  <section class="section" id="production">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers production failure taxonomies, Spider 2.0 leaderboard</span>
+      <h2>What changes in production <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">100% on 12 curated questions is not 100% in production - it is a starting line. Four things break the moment real users and a live warehouse show up. None of them is the model.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four production concerns: governance, cost, drift, scale">
+        <style>
+          .b10pT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b10pC { font: 400 11.5px Inter, sans-serif; fill: #10222E; }
+          .b10pH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b10pN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="b10pH" x="30" y="34">The four things a golden set does not test</text>
+        <rect x="30" y="54" width="195" height="24" rx="6" fill="#003B57"/>
+        <text class="b10pT" x="44" y="71">Governance</text>
+        <rect x="30" y="78" width="195" height="120" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="b10pC" x="42" y="100">Query runs as WHO?</text>
+        <text class="b10pC" x="42" y="120">Row-level security must</text>
+        <text class="b10pC" x="42" y="140">hold with an LLM in loop.</text>
+        <text class="b10pC" x="42" y="160">Audit: why did it answer</text>
+        <text class="b10pC" x="42" y="180">X last Tuesday?</text>
+        <rect x="243" y="54" width="195" height="24" rx="6" fill="#0F80CC"/>
+        <text class="b10pT" x="257" y="71">Cost</text>
+        <rect x="243" y="78" width="195" height="120" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="b10pC" x="255" y="100">Per-message vs warehouse</text>
+        <text class="b10pC" x="255" y="120">pricing. Multi-candidate</text>
+        <text class="b10pC" x="255" y="140">multiplies both token</text>
+        <text class="b10pC" x="255" y="160">and query spend. Budget</text>
+        <text class="b10pC" x="255" y="180">the retries.</text>
+        <rect x="456" y="54" width="195" height="24" rx="6" fill="#7C3AED"/>
+        <text class="b10pT" x="470" y="71">Drift</text>
+        <rect x="456" y="78" width="195" height="120" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="b10pC" x="468" y="100">Schema changes rot your</text>
+        <text class="b10pC" x="468" y="120">retrieval and semantic</text>
+        <text class="b10pC" x="468" y="140">docs silently. Re-run the</text>
+        <text class="b10pC" x="468" y="160">golden set on EVERY</text>
+        <text class="b10pC" x="468" y="180">migration.</text>
+        <rect x="669" y="54" width="181" height="24" rx="6" fill="#3DA0E3"/>
+        <text class="b10pT" x="683" y="71">Scale</text>
+        <rect x="669" y="78" width="181" height="120" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="b10pC" x="681" y="100">Genie: 30 tables/space,</text>
+        <text class="b10pC" x="681" y="120">rec 5 or fewer; 20 q/min.</text>
+        <text class="b10pC" x="681" y="140">More context is not</text>
+        <text class="b10pC" x="681" y="160">better - retrieval keeps</text>
+        <text class="b10pC" x="681" y="180">the prompt focused.</text>
+        <rect x="30" y="262" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b10pN" x="52" y="274">The golden set proves the SQL is right. These four prove the system is safe, affordable, and durable.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the four production concerns beyond accuracy</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The agent frontier - where the field is in 2026<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The same lesson plays out at the research frontier. On the enterprise-grade Spider 2.0 benchmark, bare models scored 10-17%. By mid-2026 the leaderboard is dominated by <strong>agents</strong> - the top Spider 2.0-Snow entry sits near 96.7 (a leaderboard figure, and the benchmark's own annotation quality is contested - see b8). Agents win by doing exactly what you built: retrieve context, execute, observe errors, retry.</p>
+        <ul>
+          <li><strong>Agents beat bare models</strong> because they add context and correction loops at runtime, not because they use smarter base models.</li>
+          <li><strong>Interactive settings are still hard:</strong> on BIRD-Interact, GPT-5 was reported to complete only 29% of tasks in agentic mode (a benchmark figure). Multi-turn, ambiguous, real conversation remains unsolved.</li>
+          <li><strong>Read every leaderboard number skeptically</strong> - b8 showed why (annotation error rates of 50%+ on major benchmarks). Your own golden set on your own data still beats any public score.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Governance recap - how the vendors handle it<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The commercial tools solve governance by staying inside their platform: <strong>Cortex Analyst</strong> keeps data and row-level security inside Snowflake; <strong>Genie</strong> inherits Unity Catalog permissions; <strong>Vanna v2</strong> added a user-aware identity flow with row-level security for self-hosted deployments. The anti-pattern is the CSV-export tool (Julius-style) that pulls data out to an ungoverned sandbox - convenient, and a shadow-IT audit failure. If you build your own agent, the query must execute under the asking user's permissions, never a service account with god-mode. The leader track's a5 covers this from the risk-officer angle.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>The capstone run: measure every lever's worth <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Run the full stack, then take levers away one at a time and watch the number fall. That drop is each lever's marginal value on this data - the single most useful experiment you can run on any text-to-SQL system.</p>
+
+    <div class="steps">
+      <div class="step"><p>Run the scorecard with all levers on - 12/12, 100%. That is your ceiling on this golden set.</p></div>
+      <div class="step"><p>Turn OFF <strong>semantic layer</strong> only, re-run. Watch it fall to 58% - the biggest single drop, because Daybreak's hard questions are metric-definition questions.</p></div>
+      <div class="step"><p>Turn semantic back on, turn OFF <strong>schema linking</strong>, re-run. Different questions break - the loud hallucinations return.</p></div>
+      <div class="step"><p>Note which questions are fragile (break when almost any lever is missing) versus robust. Those fragile ones are where you would spend curation effort first in production.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="scorecard" data-on="schema,examples,rag,semantic,selfcorrect"></div>
+
+    <div class="callout tip">
+      <strong>Prove it against real SQL</strong>
+      Any answer you doubt, check by hand - this editor runs the same database. Compare the gold delivered-only revenue with what a semantic-off run produced.
+    </div>
+    <div class="sqlbox" data-caption="The delivered-only revenue definition - the metric the semantic layer encodes.">
+      <pre class="sql-src">SELECT ROUND(SUM(oi.quantity * oi.unit_price), 2) AS revenue
+FROM order_items oi
+JOIN orders o ON o.order_id = oi.order_id
+WHERE o.status = 'delivered';</pre>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Design your own golden set <span class="tag demo">★ 10 min · take it to work</span></h2>
+    </div>
+    <p class="lede">The one artifact that transfers directly to your job. Pick a database you know. Write five real questions your stakeholders ask, and for each, mark which levers it will need. This table is the first thing to build on any real text-to-SQL project - before you pick a tool.</p>
+
+    <table class="clean">
+      <thead><tr><th>Question</th><th>Needs schema?</th><th>Needs examples?</th><th>Needs a metric definition?</th></tr></thead>
+      <tbody>
+        <tr><td>e.g. "revenue last quarter"</td><td>yes - which tables</td><td>maybe</td><td>YES - what counts as revenue</td></tr>
+        <tr><td>your Q1 ...</td><td></td><td></td><td></td></tr>
+        <tr><td>your Q2 ...</td><td></td><td></td><td></td></tr>
+        <tr><td>your Q3 ...</td><td></td><td></td><td></td></tr>
+        <tr><td>your Q4 ...</td><td></td><td></td><td></td></tr>
+        <tr><td>your Q5 ...</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout example">
+      <span class="ex-pill">Real world</span>
+      <p><strong>The metric column is where the money is.</strong> Every question with a "YES" in the last column is a silent-failure waiting to happen without a semantic layer. Count them: that ratio predicts how much curation your project needs before a text-to-SQL tool can be trusted with a real decision. Teams that skip this and buy a tool first spend the difference in wrong dashboards.</p>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 30-40 min total</span></h2>
+    </div>
+    <ul>
+      <li>Redraw the accuracy ladder from memory - the six bars and what each lever fixed. If you can teach it, you own it.</li>
+      <li>Finish your five-question golden set from Demo 2 for a real database, and count the "needs a metric definition" rows.</li>
+      <li>For that same database, write down: who would the query run as, and does row-level security survive an LLM in the loop? That is your governance gap.</li>
+      <li>Draft a one-paragraph pilot scope: which 5 tables, which one domain, who owns the golden set. This is the b-track version of leader session a6.</li>
+      <li>Pick your next course from the family strip below based on the gap you feel most: retrieval mechanics, evaluation rigor, agent frameworks, or SQL itself.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This capstone synthesizes the whole track's evidence into a production checklist. Papers and leaderboards stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Spider 2.0 leaderboard (mid-2026, agent-dominated)</span><span class="note">Part 2 · agents beat bare models by adding context + correction, not IQ</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Production failure taxonomies (schema drift, metric ambiguity, non-determinism)</span><span class="note">Part 2 · the four things a golden set does not test</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Genie / Cortex Analyst operational limits</span><span class="note">Part 2 · 30 tables/space, 20 q/min, warehouse pricing, governance boundaries</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">BIRD-Interact agentic result (GPT-5 ~29%)</span><span class="note">Part 2 · interactive settings still unsolved; a benchmark figure, cited cautiously</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · DaybreakGPT went from 8% to 100%. Where did the accuracy come from?</p>
+      <button class="qopt" type="button">A · Upgrading to a larger, smarter base model at each step</button>
+      <button class="qopt" type="button">B · Context - schema linking, examples, retrieval, a semantic layer, and a retry loop; the model never changed</button>
+      <button class="qopt" type="button">C · Fine-tuning a custom SQL model on Daybreak</button>
+      <p class="qwhy">Every lever was a context-engineering move. The base model was constant throughout. That is the thesis of the whole track: the model is not the product, context is.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · What re-triggers a full evaluation run in production?</p>
+      <button class="qopt" type="button">A · Only a model version upgrade</button>
+      <button class="qopt" type="button">B · Nothing - once you hit your target you are done</button>
+      <button class="qopt" type="button">C · Any schema migration, prompt change, or model upgrade - drift silently rots retrieval and semantic docs</button>
+      <p class="qwhy">Schema evolution is the quiet killer: a renamed column or new table breaks retrieval and definitions without any error. Re-run the golden set on every change - that is why you versioned it.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · What is the right scope for a first production pilot?</p>
+      <button class="qopt" type="button">A · About 5 tables, one domain, 20-50 golden questions, one accountable curator</button>
+      <button class="qopt" type="button">B · The entire warehouse, so users can ask anything from day one</button>
+      <button class="qopt" type="button">C · As many tables as the tool's maximum allows</button>
+      <p class="qwhy">Scope small or fail - it matches Genie's own guidance (5 or fewer tables) and keeps the golden set tractable. Boiling the warehouse is the top adoption anti-pattern; expand only on measured evidence.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder track full recap <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>b2 · Schema linking</b><span>Right tables/columns in context. Kills hallucinated columns (loud errors). +17 pts.</span></div>
+      <div class="cheat-item"><b>b3 · Few-shot examples</b><span>Worked query pairs teach the right shape (SUM vs COUNT). Quality &gt; quantity. +17 pts.</span></div>
+      <div class="cheat-item"><b>b4 · RAG over metadata</b><span>Retrieve DDL + docs + example pairs per question. Carries business vocabulary. +16 pts.</span></div>
+      <div class="cheat-item"><b>b5 · Semantic layer</b><span>Metric + filter definitions. Biggest lever (+34) - turns silent failures into loud ones.</span></div>
+      <div class="cheat-item"><b>b6 · Self-correction</b><span>Execute, catch the error, retry. Only fixes LOUD failures, never silent ones. +8 pts.</span></div>
+      <div class="cheat-item"><b>b7-b8 · Multi-candidate + eval</b><span>Generate N, vote by result; measure with execution accuracy on a versioned golden set.</span></div>
+      <div class="cheat-item"><b>Production breaks</b><span>Governance (run-as-who), cost (retries), drift (re-run on migration), scale (few tables).</span></div>
+      <div class="cheat-item"><b>The pilot</b><span>5 tables, one domain, 20-50 golden questions, one curator. Expand on evidence only.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 10 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b9-framework-tour.html">← Prev: The framework tour</a> &nbsp;·&nbsp; <a href="../index.html">Back to all sessions →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 1 · The self-serve dream - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Leader session 1 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Leader track · Session 1 of 6</div>
+    <h1>The <span class="accent">self-serve dream</span>: everyone asks their own data questions</h1>
+    <p class="sub">"Just ask your data a question" is the oldest promise in business intelligence, and in 2026 every vendor says an LLM finally delivers it. This track makes you the executive who can tell the demo from the product. Tonight: why the promise kept failing, why LLMs really did change something, what they did not change, and a map of who is selling you what. No code - this is a thinking-mode session for the people who sign the contracts.</p>
+    <div class="chip-row">
+      <span class="chip level">🔵 Leader track</span>
+      <span class="chip audience">Execs · data leaders · PMs</span>
+      <span class="chip audience">No code needed</span>
+      <span class="chip time">Start here</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · The promise &amp; the gap</span>
+      <span class="a3" style="flex:4">18-35 · Market moment 2026</span>
+      <span class="a4" style="flex:2">35-45 · Score your org</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>How this track works</h2>
+    </div>
+    <p class="lede">Six sessions, 45 minutes each, zero code. The leader track exists because the buying decisions around text-to-SQL - which vendor, what scope, whose time, what risk - are executive decisions, and the vendors are counting on you not knowing the questions to ask. By a6 you will run a pilot the way a professional buyer does. One sentence carries the whole course: <strong>the model is not the product - context is.</strong> Everything you are sold, and everything that actually works, hangs off that sentence.</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after class</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      Why the self-serve promise kept failing before LLMs and what actually changed; the demo-vs-production gap in one picture; the 2026 adoption numbers (and how to hear "agent washing" when a vendor talks); a four-category map of the market; and a five-question diagnostic you can run on your own organization this week.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE OLDEST PROMISE ============ -->
+  <section class="section" id="promise">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the demo-vs-production gap</span>
+      <h2>The oldest promise in BI <span class="tag concept">15 min live</span></h2>
+    </div>
+    <p class="lede">Every BI generation has promised the same thing: business people ask their own questions, no analyst queue, no ticket backlog. Each wave got closer, and each wave still ended with the data team writing the queries - because the hard part was never the interface. It was the meaning: which tables, which joins, what "revenue" includes. LLMs finally made the <em>demo</em> of the dream work. Whether the product works is a different question, and the gap between the two is this entire course.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The promise pipeline shown in demos versus the hidden reality stack of context, governance and curation underneath">
+        <style>
+          .a1pT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a1pS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .a1pH { font: 700 13px Inter, sans-serif; fill: #10222E; }
+          .a1pC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .a1pX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .a1pN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .a1pArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#a1pah); }
+        </style>
+        <defs>
+          <marker id="a1pah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="a1pH" x="30" y="34">What the demo shows</text>
+        <rect x="30" y="50" width="180" height="64" rx="10" fill="#003B57"/>
+        <text class="a1pT" x="46" y="76">Question</text>
+        <text class="a1pS" x="46" y="96">"Revenue last quarter?"</text>
+        <rect x="280" y="50" width="200" height="64" rx="10" fill="#7C3AED"/>
+        <text class="a1pT" x="296" y="76">Chat · LLM writes SQL</text>
+        <text class="a1pS" x="296" y="96">seconds, no analyst</text>
+        <rect x="550" y="50" width="180" height="64" rx="10" fill="#3DA0E3"/>
+        <text class="a1pT" x="566" y="76">Answer</text>
+        <text class="a1pS" x="566" y="96">a number, instantly</text>
+        <path class="a1pArr" d="M210,82 L278,82"/>
+        <path class="a1pArr" d="M480,82 L548,82"/>
+        <line x1="30" y1="140" x2="850" y2="140" stroke="#AEC4D2" stroke-width="2" stroke-dasharray="7 5"/>
+        <text class="a1pX" x="30" y="160">the demo waterline - everything below is invisible in the sales meeting</text>
+        <text class="a1pH" x="30" y="192">What production requires underneath</text>
+        <rect x="30" y="206" width="255" height="66" rx="10" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="a1pH" x="46" y="230">Context</text>
+        <text class="a1pC" x="46" y="250">metadata · example queries</text>
+        <text class="a1pC" x="46" y="264">metric definitions</text>
+        <rect x="315" y="206" width="255" height="66" rx="10" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="a1pH" x="331" y="230">Governance</text>
+        <text class="a1pC" x="331" y="250">permissions · row-level security</text>
+        <text class="a1pC" x="331" y="264">audit trails</text>
+        <rect x="600" y="206" width="250" height="66" rx="10" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="a1pH" x="616" y="230">Curation</text>
+        <text class="a1pC" x="616" y="250">humans keeping meaning</text>
+        <text class="a1pC" x="616" y="264">and examples current</text>
+        <rect x="30" y="296" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="a1pN" x="54" y="308">Vendors demo the top row. Your organization buys, builds, and staffs the bottom row.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the promise pipeline every demo shows, and the hidden stack production runs on</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why LLMs finally made the demo work<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Pre-LLM self-serve tools made users learn the tool - drag fields, build filters, know which dataset to open. LLMs removed that: plain English in, SQL out, and on a clean demo database it genuinely works. That is a real advance, not smoke. The trap is what a clean demo hides:</p>
+        <ul>
+          <li><strong>Demo databases are small and self-describing.</strong> Six well-named tables. Real warehouses have hundreds of cryptically named ones - a2 puts hard numbers on how much that costs.</li>
+          <li><strong>Demo questions avoid business meaning.</strong> "How many customers?" needs only the schema. "What was revenue?" needs a definition of revenue that lives in nobody's schema.</li>
+          <li><strong>Demo answers are never checked.</strong> A confident wrong number looks identical to a right one - that is a2's silent-failure lesson, the single most important risk idea in this track.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>Salesforce shipped it and published the honest number.</strong> Their production text-to-SQL agent launched at roughly 50% efficacy - a coin flip, from a company with world-class engineering, after the demos looked great. Getting to ~80% took generating ten candidate queries per question and scoring them. The lesson for a buyer: even the best builders start far below the demo, and the climb is engineering effort around the model, not a better model.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why every earlier self-serve wave stalled<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Ask a veteran BI lead what happened to the last self-serve push and you will usually hear the same arc: launch enthusiasm, a wave of dashboards, then quiet reversion to the analyst queue. The interface was never the bottleneck. The bottleneck was that answering a business question requires business context - which tables are trustworthy, what filters "count", what the words in the question mean. LLMs changed the interface radically and changed the context problem not at all. That is why this course's thesis is <strong>the model is not the product - context is</strong>: the winners in this market are the products that manage context well, and the cost you should budget for is context curation (a4 prices it).</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: MARKET MOMENT 2026 ============ -->
+  <section class="section" id="market">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers adoption stats + the category map</span>
+      <h2>Market moment 2026: real adoption, real noise <span class="tag concept">17 min live</span></h2>
+    </div>
+    <p class="lede">The market is genuinely moving and genuinely noisy at the same time. Two adoption signals worth knowing - both vendor-published, so hold them lightly - and one word that should sharpen your skepticism in every vendor meeting.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The numbers and the noise<span class="mini">6 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>LangChain's 2026 survey (vendor-published):</strong> 57% of organizations report running AI agents in production, and 24.4% name data analysis as the primary agent use case - the single biggest category. If that is even directionally right, chat-with-data is the front line of enterprise AI agents.</li>
+          <li><strong>Gartner (as reported in vendor comparison articles):</strong> 40% of enterprise applications will include task-specific agents by end of 2026. Gartner pairs that projection with a warning that matters more than the number: <strong>"agent washing"</strong> - existing product features relabeled as agents and sold at agent prices.</li>
+          <li><strong>What agent washing sounds like in a meeting:</strong> "our AI agent" turns out to be the same autocomplete feature from last year's release. The test question: <em>what does it do differently when it is wrong?</em> A real agentic system checks, retries, or escalates. A relabeled feature just returns the answer with the same confidence either way.</li>
+        </ul>
+      </div>
+    </details>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four-category map of the text-to-SQL market: warehouse-native, BI copilots, AI analysts, open source">
+        <style>
+          .a1mT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a1mH { font: 700 13px Inter, sans-serif; fill: #10222E; }
+          .a1mC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .a1mX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .a1mN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="a1mH" x="30" y="34">The category map - four ways to buy (or build) chat-with-data</text>
+        <rect x="30" y="52" width="400" height="110" rx="10" fill="#003B57"/>
+        <text class="a1mT" x="46" y="78">Warehouse-native</text>
+        <text class="a1mC" x="46" y="102" fill="#FFFFFF" opacity=".92">Databricks AI/BI Genie · Snowflake Cortex Analyst</text>
+        <text class="a1mC" x="46" y="122" fill="#FFFFFF" opacity=".92">Lives where the data lives; governance intact;</text>
+        <text class="a1mC" x="46" y="140" fill="#FFFFFF" opacity=".92">deep curation expected. Detailed in a3.</text>
+        <rect x="450" y="52" width="400" height="110" rx="10" fill="#0F80CC"/>
+        <text class="a1mT" x="466" y="78">BI copilots</text>
+        <text class="a1mC" x="466" y="102" fill="#FFFFFF" opacity=".92">Power BI Copilot · Tableau · Looker + Gemini</text>
+        <text class="a1mC" x="466" y="122" fill="#FFFFFF" opacity=".92">· ThoughtSpot. AI bolted onto the BI tool you</text>
+        <text class="a1mC" x="466" y="140" fill="#FFFFFF" opacity=".92">already own; scope bound to that tool's model.</text>
+        <rect x="30" y="180" width="400" height="110" rx="10" fill="#3DA0E3"/>
+        <text class="a1mT" x="46" y="206">AI analysts</text>
+        <text class="a1mC" x="46" y="230" fill="#FFFFFF" opacity=".92">Hex · Julius (+ Mode, Deepnote, Tellius...)</text>
+        <text class="a1mC" x="46" y="250" fill="#FFFFFF" opacity=".92">Chat + notebook experiences; fastest demos;</text>
+        <text class="a1mC" x="46" y="268" fill="#FFFFFF" opacity=".92">governance coverage varies widely (a3, a5).</text>
+        <rect x="450" y="180" width="400" height="110" rx="10" fill="#9FCFEE"/>
+        <text class="a1mT" x="466" y="206" fill="#10222E">Open source</text>
+        <text class="a1mC" x="466" y="230">Vanna · WrenAI. Build-it-yourself platforms;</text>
+        <text class="a1mC" x="466" y="250">your engineers own accuracy and upkeep;</text>
+        <text class="a1mC" x="466" y="268">volatile market (a3 has a cautionary tale).</text>
+        <rect x="30" y="304" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="a1mN" x="54" y="316">All four are the same pipeline underneath. The real difference: who curates the context, and who pays for it.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the four-category market map; a3 walks each category vendor by vendor</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Reading the map as a buyer<span class="mini">3 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Category</th><th>You are betting on</th><th>Who does the curation work</th></tr></thead>
+          <tbody>
+            <tr><td>Warehouse-native</td><td>Your existing warehouse vendor</td><td>Your data team, inside vendor tooling</td></tr>
+            <tr><td>BI copilots</td><td>Your existing BI vendor</td><td>Your BI team, inside that tool's semantic model</td></tr>
+            <tr><td>AI analysts</td><td>A newer standalone vendor</td><td>Varies - some index your schema, some just chat</td></tr>
+            <tr><td>Open source</td><td>Your own engineers</td><td>Entirely your team</td></tr>
+          </tbody>
+        </table>
+        <p>Notice the constant: in every row somebody on your side curates context. No category removes that column - a4 is devoted to what that work costs and why skipping it is how pilots die.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THIS TRACK ============ -->
+  <section class="section" id="track">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · the road ahead</span>
+      <h2>What this track gives you <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Six sessions to become the executive who asks the right questions. The ladder: <strong>a1</strong> the dream and the market (tonight) → <strong>a2</strong> the accuracy cliff, with numbers you can repeat in a board conversation → <strong>a3</strong> the vendor landscape and how to compare claims that refuse to be compared → <strong>a4</strong> the curation tax nobody prices into the pilot → <strong>a5</strong> governance and trust with an LLM in the loop → <strong>a6</strong> the adoption playbook: scope, measure, expand, or say no.</p>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Choose your depth<span class="mini">1 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>This leader path (a1-a6) never asks you to write code. Curious leaders who want to see the machinery with their own eyes can peek at builder session <a href="b1-baseline-agent.html">b1</a>, where a naive text-to-SQL agent gets built and broken live in the browser - the two tracks share one database, one golden set, and one thesis. Nothing in a1-a6 depends on it.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo · guided discussion</span>
+      <h2>Score your org: the five-question diagnostic <span class="tag demo">★ 10 min · everyone answers</span></h2>
+    </div>
+    <p class="lede">No tools, no laptops - just five questions answered honestly, ideally out loud with your data lead in the room. Your answers predict how a text-to-SQL pilot would go in your organization better than any vendor benchmark does.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>Do we have metric definitions written down anywhere?</strong> One place where "revenue", "active customer", "churn" are defined. If the answer is "it's in people's heads" - that is the first thing any tool will get wrong.</p></div>
+      <div class="step"><p><strong>Who answers ad-hoc data questions today, and how long is the queue?</strong> This is the pain the dream promises to remove. If you cannot size it, you cannot size the value of fixing it.</p></div>
+      <div class="step"><p><strong>What happened to the last self-serve BI push?</strong> If it stalled, name why. An LLM interface on top of the same unsolved context problem stalls the same way.</p></div>
+      <div class="step"><p><strong>If a chat tool returned a plausible wrong number, how would we find out?</strong> If the honest answer is "we might not" - hold that feeling until a2. It is the central risk of this category.</p></div>
+      <div class="step"><p><strong>Which 20 real questions would we most want self-served?</strong> Write them down. That list becomes your golden set - the measuring stick a6 builds the whole pilot around.</p></div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Scoring the diagnostic</strong>
+      Confident written answers to 1 and 5 mean you are unusually ready - the curation work (a4) is half done. Blank stares at 1 and 4 mean a pilot today would demo well and fail silently. Neither result says "don't do it"; both tell you what to fix first, and in which session of this track the fix lives.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Ask your team - this week <span class="tag exercise">◐ 30 min of conversations</span></h2>
+    </div>
+    <ul>
+      <li>Ask your BI or data lead: how many ad-hoc data questions arrived last month, and what was the median wait for an answer? That number is the size of the prize.</li>
+      <li>Ask where "revenue" is defined in writing. If three teams give three definitions, you have found your future silent failures before spending a dollar.</li>
+      <li>Ask what happened to the last self-serve BI initiative - launch date, peak usage, and what people quietly went back to doing.</li>
+      <li>Ask any vendor currently in your pipeline which of the four map categories they sit in, and what curation work they expect from your side. Vague answers to the second question are a red flag a4 will explain.</li>
+      <li>Start the 20-question list from the diagnostic with your team. Do not polish it - a rough real list beats a perfect hypothetical one, and a6 will put it to work.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills current market evidence into discussion-ready sessions; the source articles stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Tellius 12-platform text-to-SQL comparison</span><span class="note">Part 2 · the four-category map; vendor-by-vendor detail lands in a3</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">LangChain 2026 agents survey + Gartner projections (via comparison articles)</span><span class="note">Part 2 · adoption stats, vendor-published - presented as claims, not facts</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Why does every text-to-SQL demo look flawless while production systems struggle?</p>
+      <button class="qopt" type="button">A · Vendors secretly hard-code the demo answers</button>
+      <button class="qopt" type="button">B · Demos run simple questions on small, clean, self-describing databases - production runs business questions on huge cryptic schemas whose meaning lives outside the schema</button>
+      <button class="qopt" type="button">C · Demo hardware is faster than production hardware</button>
+      <p class="qwhy">No trickery needed: the demo environment is genuinely easy. The gap is context - schema scale and business meaning - which is why a2's benchmark cliff exists and why every fix is a context lever.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · What is "agent washing"?</p>
+      <button class="qopt" type="button">A · Cleaning training data before it reaches an agent</button>
+      <button class="qopt" type="button">B · Running an agent's answers past a second agent for review</button>
+      <button class="qopt" type="button">C · Relabeling existing product features as "agents" to ride the wave - the warning Gartner attaches to its 40%-by-2026 projection</button>
+      <p class="qwhy">The test question in any vendor meeting: what does it do differently when it is wrong? A real agentic system checks, retries, or escalates. A relabeled feature answers with the same confidence either way.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · "The model is not the product." What is the product?</p>
+      <button class="qopt" type="button">A · Context - the metadata, examples, metric definitions, and curation that reach the model, which is where products differ and where your money goes</button>
+      <button class="qopt" type="button">B · The user interface - whichever chat window feels most polished</button>
+      <button class="qopt" type="button">C · The model - buying access to the biggest LLM is the differentiator</button>
+      <p class="qwhy">Every product in the category map is the same pipeline around some frontier model. What differs - and what your team will spend its time on - is the context layer. a4 prices that work; a3 shows how each vendor packages it.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 1 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The promise</b><span>"Ask your data anything" - the oldest promise in BI. LLMs finally made the demo work; the demo is not the product.</span></div>
+      <div class="cheat-item"><b>The waterline</b><span>Demos show question → chat → answer. Production runs on context + governance + curation underneath.</span></div>
+      <div class="cheat-item"><b>Adoption 2026</b><span>57% of orgs run agents in production; 24.4% name data analysis the top use case (LangChain survey, vendor-published).</span></div>
+      <div class="cheat-item"><b>Agent washing</b><span>Gartner: 40% of enterprise apps with task-specific agents by end 2026 - and many "agents" are relabeled features.</span></div>
+      <div class="cheat-item"><b>The map</b><span>Warehouse-native (Genie, Cortex Analyst) · BI copilots · AI analysts · open source. Same pipeline, different curator.</span></div>
+      <div class="cheat-item"><b>The thesis</b><span>The model is not the product - context is. Every vendor difference and every fix lives in the context layer.</span></div>
+      <div class="cheat-item"><b>The diagnostic</b><span>Metric definitions written? Who answers ad-hoc questions? Last self-serve push? How would we catch a wrong number? Which 20 questions?</span></div>
+      <div class="cheat-item"><b>Next session</b><span>a2 - the accuracy cliff: the benchmark numbers an exec can repeat in a board conversation.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 1 of 6 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="a2-accuracy-cliff.html">Next: The accuracy cliff →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

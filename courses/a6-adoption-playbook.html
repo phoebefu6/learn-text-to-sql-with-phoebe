@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 6 · The adoption playbook - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Leader session 6 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Leader track · Session 6 of 6</div>
+    <h1>The adoption playbook: <span class="accent">the plan you leave with</span></h1>
+    <p class="sub">Five sessions of honest framing come down to one page: how to run a text-to-SQL pilot that earns trust instead of burning it. Scope small, measure like the research teams do, and decide buy-versus-build-versus-wait with clear eyes. You walk out with a pilot charter you could take to Monday's meeting.</p>
+    <div class="chip-row">
+      <span class="chip level">🟠 Leader track · capstone</span>
+      <span class="chip audience">Execs · data leaders · PMs</span>
+      <span class="chip audience">No code needed</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-20 · Scope + measure</span>
+      <span class="a3" style="flex:4">20-40 · Buy/build/wait + charter</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>From understanding to action</h2>
+    </div>
+    <p class="lede">You now know the promise (a1), the accuracy cliff (a2), the vendor map (a3), the curation tax (a4), and the governance risks (a5). This session turns all of it into a plan. The through-line has not changed: the model is not the product, context is - so an adoption plan is really a curation-and-measurement plan, not a procurement one.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill inkpill">Sources covered</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A pilot scoping rule that prevents the most common failure, the one weekly number that keeps a rollout honest, a clean buy-versus-build-versus-wait decision framework, and a one-page pilot charter template - scope, owner, metric, kill criteria, expansion gate - ready to fill in.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: SCOPE + MEASURE ============ -->
+  <section class="section" id="scope">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Genie curation guidance, the accuracy ladder</span>
+      <h2>Scope small, measure like the pros <span class="tag concept">9 min live</span></h2>
+    </div>
+    <p class="lede">The number-one adoption failure is scope. Teams point the tool at the whole warehouse so "users can ask anything," accuracy craters, trust dies in week two, and the project is quietly shelved. The fix is unglamorous and reliable: start tiny.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The pilot loop: scope, measure, expand, with gates between each stage">
+        <style>
+          .a6sT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a6sC { font: 400 11.5px Inter, sans-serif; fill: #10222E; }
+          .a6sX { font: 400 11px Inter, sans-serif; fill: #526472; }
+          .a6sN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .a6sArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#a6sah); }
+        </style>
+        <defs>
+          <marker id="a6sah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <rect x="40" y="80" width="200" height="90" rx="10" fill="#003B57"/>
+        <text class="a6sT" x="56" y="108">1 · Scope</text>
+        <text class="a6sC" x="56" y="130" fill="#FFFFFF">5 tables · one domain</text>
+        <text class="a6sX" x="56" y="150" fill="#CDE7F5">20-50 golden questions</text>
+        <rect x="340" y="80" width="200" height="90" rx="10" fill="#0F80CC"/>
+        <text class="a6sT" x="356" y="108">2 · Measure</text>
+        <text class="a6sC" x="356" y="130" fill="#FFFFFF">weekly execution accuracy</text>
+        <text class="a6sX" x="356" y="150" fill="#CDE7F5">count silent failures</text>
+        <rect x="640" y="80" width="200" height="90" rx="10" fill="#7C3AED"/>
+        <text class="a6sT" x="656" y="108">3 · Expand</text>
+        <text class="a6sC" x="656" y="130" fill="#FFFFFF">add tables on evidence</text>
+        <text class="a6sX" x="656" y="150" fill="#E9D9FB">only after the gate clears</text>
+        <path class="a6sArr" d="M240,125 L338,125"/>
+        <path class="a6sArr" d="M540,125 L638,125"/>
+        <path class="a6sArr" d="M740,170 C740,215 300,220 240,172" stroke-dasharray="5 4"/>
+        <text class="a6sX" x="360" y="205">gate: hit accuracy bar + silent failures under threshold before expanding</text>
+        <rect x="40" y="262" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="a6sN" x="62" y="274">Genie's own guidance is 5 or fewer tables. Boiling the warehouse is the top adoption anti-pattern.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the pilot loop with gates between scope, measure, and expand</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The weekly number that keeps everyone honest<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Pick one metric and report it every week: <strong>execution accuracy on your golden set</strong> - the share of questions where the tool's answer matches the human-verified answer. Not "users seem happy," not "the demo went well." A hard number on real questions, tracked over time, is what separates a real rollout from a hopeful one.</p>
+        <ul>
+          <li><strong>The ladder is your roadmap conversation.</strong> When accuracy is low, the fix is a known sequence: better schema context, then worked examples, then retrieved metadata, then metric definitions, then a retry loop. That is the builder track's measured climb (8% to 100%), and it is the language to use with your data team.</li>
+          <li><strong>Track silent failures separately.</strong> A plausible wrong answer is worse than an error - count them by hand each week. Zero tolerance for silent failures on high-stakes questions is a reasonable gate.</li>
+          <li><strong>Engineering, not model-swapping, moves the number.</strong> Salesforce's production agent launched at roughly 50% and reached about 80% - not by changing models, but by generating 10 candidate queries and scoring them (a vendor-reported case). Expect the same: the wins come from context and process.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The rollout that survived.</strong> A data leader scoped a pilot to five finance tables and twenty golden questions, reported one accuracy number in the Monday standup, and refused to expand until it cleared 90% with zero silent failures on the revenue questions. It took six weeks and looked slow. The parallel team that opened the whole warehouse "for feedback" hit 30%, lost the executive sponsor by week three, and never recovered. Small and measured beat big and hopeful.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: BUY/BUILD/WAIT ============ -->
+  <section class="section" id="decide">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · synthesis of a1-a5</span>
+      <h2>Buy, build, or wait <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Not every organization should move now. The honest framework has three doors, and "wait" is often the right one - because a text-to-SQL tool pointed at undefined metrics just automates wrong answers faster.</p>
+
+    <table class="clean">
+      <thead><tr><th>Door</th><th>Choose it when</th><th>What it commits you to</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Buy</strong></td><td>Your data already lives in Databricks or Snowflake, and you want standard self-serve for a defined domain</td><td>The native tool (Genie / Cortex) plus the curation hours to feed it - the tool is cheap, the semantic model is the work</td></tr>
+        <tr><td><strong>Build</strong></td><td>You need to embed chat-with-data into your own product, or have governance needs no vendor meets</td><td>An engineering team owning the pipeline you saw in the builder track - and its maintenance forever</td></tr>
+        <tr><td><strong>Wait</strong></td><td>No metric definitions are written down anywhere; nobody owns "what counts as revenue"</td><td>Paying the curation tax first - define your metrics before any tool can be trusted with them</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>The "wait" door is not defeat</strong>
+      If your organization cannot answer "what counts as an active customer" in one agreed sentence, no text-to-SQL tool will either - it will just guess, plausibly and wrongly. The highest-return move is often to write the semantic definitions first (a4's curation tax), which pays off for every dashboard and analyst too, not only the AI tool.
+    </div>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Guided exercise</span>
+      <h2>Draft the one-page pilot charter <span class="tag demo">★ 10 min · take it to Monday</span></h2>
+    </div>
+    <p class="lede">Fill these five blanks and you have a charter that would pass any steering committee. Do it now, on a real domain in your organization.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>Scope:</strong> which one domain and which 5 tables? (Name them. If you cannot name 5, you have not scoped tightly enough.)</p></div>
+      <div class="step"><p><strong>Golden set owner:</strong> who writes and maintains the 20-50 questions with verified SQL? One accountable name, not a committee.</p></div>
+      <div class="step"><p><strong>Weekly metric:</strong> execution accuracy on the golden set, plus silent-failure count. Reported where and to whom?</p></div>
+      <div class="step"><p><strong>Kill criteria:</strong> what number, unmet by what date, ends the pilot honestly? (Deciding this up front prevents zombie projects.)</p></div>
+      <div class="step"><p><strong>Expansion gate:</strong> what accuracy and silent-failure threshold must hold before adding the next domain or tables?</p></div>
+    </div>
+
+    <div class="callout win">
+      <strong>★ The charter is the deliverable</strong>
+      This one page is worth more than any tool trial. It forces the two decisions that actually determine success - tight scope and honest measurement - before a dollar is spent. A team with this charter and no tool yet is further ahead than a team with a tool and no charter.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Questions to bring to your team <span class="tag exercise">◐ 25-35 min total</span></h2>
+    </div>
+    <ul>
+      <li>Can we name exactly 5 tables and one domain for a first pilot? If the list keeps growing, we have not scoped it - cut it down.</li>
+      <li>Who owns our golden set? If the answer is "nobody yet," that hire or assignment is step one, before any vendor conversation.</li>
+      <li>Write our top 3 business metrics in one agreed sentence each (revenue, active customer, churn). If we cannot, we are behind the "wait" door - and that is the finding.</li>
+      <li>Which door are we behind - buy, build, or wait - and what is the single fact that decides it (where our data lives, or whether our metrics are defined)?</li>
+      <li>Draft the five-line charter from the exercise for one real domain, and circulate it before we evaluate a single tool.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This capstone synthesizes the whole leader track into an actionable plan, grounded in the vendor guidance and production cases from earlier sessions. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Genie curation guidance (5 or fewer tables, iterate)</span><span class="note">Part 1 · the scope-small rule that prevents the top adoption failure</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Salesforce production case (~50% to ~80% via engineering)</span><span class="note">Part 1 · the number moves through process, not model-swapping; vendor-reported</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">The measured accuracy ladder (builder track, 8% to 100%)</span><span class="note">Part 1 · the roadmap language for the data-team conversation</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Full leader-track synthesis (a1-a5)</span><span class="note">Part 2 · buy/build/wait framework and the pilot charter</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">1 · What is the right scope for a first text-to-SQL pilot?</p>
+      <button class="qopt" type="button">A · About 5 tables, one domain, 20-50 golden questions, one accountable owner</button>
+      <button class="qopt" type="button">B · The whole warehouse, so users can ask anything from day one</button>
+      <button class="qopt" type="button">C · Whatever the tool's maximum table limit allows</button>
+      <p class="qwhy">Scope small or fail. It matches Genie's own 5-or-fewer-tables guidance and keeps the golden set tractable. Opening the whole warehouse is the top adoption anti-pattern - accuracy craters and trust dies.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · What single number should a leader track weekly during a pilot?</p>
+      <button class="qopt" type="button">A · Number of questions users asked</button>
+      <button class="qopt" type="button">B · Whether the last demo felt impressive</button>
+      <button class="qopt" type="button">C · Execution accuracy on the golden set, with silent failures counted separately</button>
+      <p class="qwhy">A hard accuracy number on real questions, tracked over time, keeps a rollout honest. Silent failures - plausible wrong answers - are tracked separately because they are the dangerous kind.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · When is "wait" the right decision?</p>
+      <button class="qopt" type="button">A · Whenever the tool costs money</button>
+      <button class="qopt" type="button">B · When no metric definitions exist - the tool would just automate wrong answers, so define metrics first</button>
+      <button class="qopt" type="button">C · Never - moving fast always beats waiting</button>
+      <p class="qwhy">If nobody can define "revenue" or "active customer" in one sentence, no tool will either. Writing those definitions (the curation tax) is the highest-return first move, and it helps every dashboard, not just the AI tool.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader track executive playbook <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Scope small</b><span>5 tables, one domain, one accountable owner. Boiling the warehouse is the top failure.</span></div>
+      <div class="cheat-item"><b>Golden set</b><span>20-50 real questions with human-verified SQL. The one artifact every pilot needs first.</span></div>
+      <div class="cheat-item"><b>Weekly number</b><span>Execution accuracy on the golden set; count silent failures separately.</span></div>
+      <div class="cheat-item"><b>The ladder is the roadmap</b><span>Schema, examples, retrieval, semantic layer, retry loop - the order to add context.</span></div>
+      <div class="cheat-item"><b>Process beats models</b><span>Salesforce: ~50% to ~80% via 10 candidates + scoring, not a new model.</span></div>
+      <div class="cheat-item"><b>Buy</b><span>Data in Databricks/Snowflake + standard self-serve. Budget the curation hours.</span></div>
+      <div class="cheat-item"><b>Build / Wait</b><span>Build to embed or for unusual governance. Wait if no metrics are defined - define them first.</span></div>
+      <div class="cheat-item"><b>The charter</b><span>Scope · owner · weekly metric · kill criteria · expansion gate. One page, before any tool.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 6 of 6 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a5-governance-trust.html">← Prev: Governance + trust</a> &nbsp;·&nbsp; <a href="../index.html">Back to all sessions →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

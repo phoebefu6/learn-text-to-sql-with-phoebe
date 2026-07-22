@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 4 · The curation tax - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Leader session 4 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Leader track · Session 4 of 6</div>
+    <h1>The curation tax: <span class="accent">the tool is cheap, the metadata is the cost</span></h1>
+    <p class="sub">Session 3 toured the vendors. This session is the budget reality none of their pricing pages mention: no text-to-SQL product works out of the box, and the real spend is the human work of curating metadata, metric definitions, and example queries. Today you see the evidence, meet the single highest-payoff item on that bill - the semantic layer - and leave knowing who pays the tax and how to budget it honestly.</p>
+    <div class="chip-row">
+      <span class="chip level">🔵 Leader track</span>
+      <span class="chip audience">Execs · data leaders · PMs</span>
+      <span class="chip audience">No code needed</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · Nothing works out of the box</span>
+      <span class="a3" style="flex:5">18-42 · Semantic layer + live lever demo</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why this session decides your budget</h2>
+    </div>
+    <p class="lede">Every vendor demo you saw in session 3 ran on a database someone spent weeks preparing. The preparation is invisible in the demo and absent from the price list, yet it is where most of the money and calendar time goes. We call it the <strong>curation tax</strong>: the metadata, definitions, examples, and test questions a system needs before its answers can be trusted. This session prices that tax with published evidence, then lets you watch the biggest single line item - the semantic layer - move accuracy live.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The iceberg picture of what text-to-SQL really costs (tool above the waterline, curation below), the documented before-and-after numbers that prove nothing works uncurated, the semantic layer explained as a business contract rather than a technology, and a budgeting rule you can defend in a planning meeting: treat curation as an ongoing product, not a setup task.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: NOTHING WORKS OUT OF THE BOX ============ -->
+  <section class="section" id="out-of-box">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Genie curation recipe, Cortex semantic-model guidance</span>
+      <h2>Nothing works out of the box - the evidence <span class="tag concept">12 min live</span></h2>
+    </div>
+    <p class="lede">This is not an opinion about immature products. It is what the vendors themselves document about their flagship tools. Both leading warehouse-native products require substantial human curation of semantic metadata before answers are dependable - and both publish the recipe.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The curation iceberg: the visible tool cost sits above the waterline, five categories of curation work sit below it">
+        <style>
+          .c4aT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .c4aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .c4aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .c4aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .c4aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="c4aH" x="30" y="34">The curation iceberg - what the budget meeting sees vs what the project actually costs</text>
+        <rect x="350" y="52" width="200" height="64" rx="10" fill="#0F80CC"/>
+        <text class="c4aT" x="368" y="78">The tool</text>
+        <text class="c4aS" x="368" y="98">license + warehouse spend</text>
+        <line x1="20" y1="132" x2="860" y2="132" stroke="#0F80CC" stroke-width="2" stroke-dasharray="7 5"/>
+        <text class="c4aX" x="30" y="126">waterline: everything above is visible in the vendor quote</text>
+        <rect x="20" y="140" width="840" height="200" fill="#E9F4FB"/>
+        <rect x="35" y="160" width="150" height="60" rx="8" fill="#003B57"/>
+        <text class="c4aT" x="48" y="185">Metadata</text>
+        <text class="c4aS" x="48" y="204">column descriptions</text>
+        <rect x="205" y="160" width="150" height="60" rx="8" fill="#003B57"/>
+        <text class="c4aT" x="218" y="185">Metric</text>
+        <text class="c4aS" x="218" y="204">definitions</text>
+        <rect x="375" y="160" width="150" height="60" rx="8" fill="#003B57"/>
+        <text class="c4aT" x="388" y="185">Trusted</text>
+        <text class="c4aS" x="388" y="204">example queries</text>
+        <rect x="545" y="160" width="150" height="60" rx="8" fill="#003B57"/>
+        <text class="c4aT" x="558" y="185">Golden set</text>
+        <text class="c4aS" x="558" y="204">benchmark questions</text>
+        <rect x="715" y="160" width="150" height="60" rx="8" fill="#003B57"/>
+        <text class="c4aT" x="728" y="185">Refresh</text>
+        <text class="c4aS" x="728" y="204">as schemas drift</text>
+        <text class="c4aX" x="35" y="252">All five are human work by your data team. None appear on the invoice. All five recur.</text>
+        <text class="c4aX" x="35" y="272">The last box is the one budgets forget: schema changes and new metrics silently rot yesterday's curation.</text>
+        <rect x="35" y="300" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="c4aN" x="59" y="312">Budget rule: price the below-waterline work as an ongoing product with an owner, not a one-time setup task.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the curation iceberg: tool cost above the waterline, the real work below it</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The before-and-after numbers vendors publish themselves<span class="mini">6 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three pieces of evidence, all from the vendors' own side of the table:</p>
+        <table class="clean">
+          <thead><tr><th>Evidence</th><th>Before curation</th><th>After curation</th></tr></thead>
+          <tbody>
+            <tr><td>Databricks Genie space (documented case)</td><td>8/15 golden questions (53%)</td><td>15/15 after systematic remodeling of the space</td></tr>
+            <tr><td>Databricks' own setup recipe</td><td colspan="2">3-7 tables, 3-5 trusted example queries, roughly 2 weeks of iteration before rollout</td></tr>
+            <tr><td>Snowflake Cortex Analyst</td><td colspan="2">Accuracy lives in the hand-written YAML semantic model - practitioners' shorthand: "the magic is in the YAML"</td></tr>
+          </tbody>
+        </table>
+        <ul>
+          <li><strong>Read the recipe as a confession.</strong> If the product worked out of the box, the vendor would not tell you to spend two weeks curating a seven-table scope before trusting it.</li>
+          <li><strong>Quality is local to the curation.</strong> Answer quality degrades on questions that diverge from the curated examples - the system is strong exactly where humans invested, and weak everywhere else.</li>
+          <li><strong>The tax scales with scope.</strong> Every extra table and metric added to the space adds curation and maintenance work. That is why session 6's playbook starts small.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why demos never show the tax<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A vendor demo runs on a schema the presenter curated for the demo - descriptive column names, pre-loaded example queries, questions rehearsed against them. Your warehouse has cryptic names, tribal-knowledge metrics, and questions nobody rehearsed. The gap between those two worlds is precisely the curation tax, which is why session 2's accuracy cliff (86% academic vs 10% enterprise) and this session are the same lesson at two zoom levels: context is the product, and context is hand-made.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE SEMANTIC LAYER ============ -->
+  <section class="section" id="semantic-layer">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers semantic-layer paired benchmark (arXiv 2604.25149), dbt-llm-sl-bench</span>
+      <h2>The semantic layer: the tax's biggest payoff <span class="tag concept">10 min live</span></h2>
+    </div>
+    <p class="lede">Of everything below the waterline, one item has the strongest published evidence: writing down what your business words mean. "Revenue" at your company might mean delivered orders only. "Churn" might mean cancelled subscriptions, not cancelled orders. That meaning lives in nobody's schema - a <strong>semantic layer</strong> is simply the document where it finally gets written down in a form the system can read.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The evidence stack for semantic layers<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Study</th><th>Finding</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Paired benchmark, three frontier models (arXiv 2604.25149)</td><td>+17 to +23 percentage points from adding one 4KB semantic document</td><td>Peer-reviewed measurement</td></tr>
+            <tr><td>dbt's open-source benchmark (dbt-llm-sl-bench)</td><td>Raw text-to-SQL 84-90% vs 98-100% through the semantic layer; 100% on in-scope questions</td><td>Vendor-published, runnable</td></tr>
+            <tr><td>Ontology-grounded case, 199-table insurance schema</td><td>16.7% raw SQL, 54.2% querying over the ontology, roughly 72% with ontology-based query checking</td><td>Vendor/blog claim - treat with caution</td></tr>
+          </tbody>
+        </table>
+        <p>Note the honesty grading: the paired benchmark is the solid one, dbt's numbers come from dbt's own (open, runnable) benchmark, and the insurance case is a vendor-reported claim. Session 5 teaches you why that grading habit matters.</p>
+      </div>
+    </details>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The failure flip: raw text-to-SQL fails silently with plausible wrong numbers, a semantic layer fails loudly with an explicit error">
+        <style>
+          .c4bT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .c4bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .c4bC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .c4bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .c4bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="c4bH" x="30" y="34">The flip that matters most: how the system fails when it fails</text>
+        <rect x="30" y="58" width="400" height="24" rx="6" fill="#7C3AED"/>
+        <text class="c4bT" x="44" y="75">RAW TEXT-TO-SQL · fails SILENTLY</text>
+        <rect x="30" y="82" width="400" height="140" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="c4bC" x="44" y="106">"What was revenue last quarter?"</text>
+        <text class="c4bC" x="44" y="128">→ 4,187.50 - runs fine, looks right,</text>
+        <text class="c4bC" x="44" y="146">quietly includes cancelled orders.</text>
+        <text class="c4bX" x="44" y="172">The wrong number ships into a real</text>
+        <text class="c4bX" x="44" y="190">decision. Nobody is warned.</text>
+        <text class="c4bC" x="44" y="214">dbt benchmark: 84-90% accurate</text>
+        <rect x="450" y="58" width="400" height="24" rx="6" fill="#003B57"/>
+        <text class="c4bT" x="464" y="75">VIA SEMANTIC LAYER · fails LOUDLY</text>
+        <rect x="450" y="82" width="400" height="140" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="c4bC" x="464" y="106">"What was margin last quarter?"</text>
+        <text class="c4bC" x="464" y="128">→ error: metric "margin" is not</text>
+        <text class="c4bC" x="464" y="146">defined in the semantic layer.</text>
+        <text class="c4bX" x="464" y="172">In-scope questions compile against</text>
+        <text class="c4bX" x="464" y="190">agreed definitions; out-of-scope fail fast.</text>
+        <text class="c4bC" x="464" y="214">dbt benchmark: 98-100% accurate</text>
+        <text class="c4bX" x="30" y="252">Same model, same warehouse. The semantic layer does not just raise the score - it converts the dangerous</text>
+        <text class="c4bX" x="30" y="270">failure (plausible wrong answer) into the safe one (an explicit error a human can see and fix).</text>
+        <rect x="30" y="292" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="c4bN" x="54" y="304">For a leader, the flip is the headline: loud failures are a support ticket, silent ones are a wrong board number.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the silent-to-loud failure flip, the semantic layer's most valuable effect</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What a semantic layer actually contains<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Metric definitions:</strong> revenue = sum of order-line value on delivered orders only. One sentence, decades of meetings ended.</li>
+          <li><strong>Vocabulary mappings:</strong> "active subscription" = cancel date is empty; "churn" = subscriptions cancelled in period, not orders.</li>
+          <li><strong>Approved join paths:</strong> which tables connect, and how - so the system never invents a shortcut.</li>
+          <li><strong>Scope boundaries:</strong> what the system is allowed to answer, so out-of-scope questions fail loudly instead of guessing.</li>
+        </ul>
+        <p>The document is small - the paired benchmark's version was 4KB, about a page and a half of text. The cost is not typing; it is getting your organization to agree what the words mean. That agreement is the tax, and it pays off everywhere, not just in AI.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: WHO PAYS ============ -->
+  <section class="section" id="who-pays">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers curation ownership + drift</span>
+      <h2>Who pays the tax - and when it comes due again <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">The tax is paid in data-team hours, and it is not paid once. Three planning facts to carry into your next budget conversation:</p>
+    <details class="card">
+      <summary><span class="mode live">Live</span>The three budgeting facts<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>The data team writes and maintains the definitions.</strong> Business stakeholders must agree on meanings, but someone technical has to encode them, test them against the golden set, and keep them true. That is engineering capacity taken from other work - plan it, don't discover it.</li>
+          <li><strong>Drift is the hidden recurring charge.</strong> A schema migration renames a column; a new product line changes what "revenue" includes; a curated example query goes stale. Nothing errors - the curation just quietly stops matching reality, and silent failures creep back. Without an owner and a re-run cadence, quality decays on a schedule nobody set.</li>
+          <li><strong>The budget rule: curation is a product, not a project.</strong> Fund it like one - a named owner, a weekly quality number (the golden-set score from session 6), and maintenance time in every schema-change ticket. The alternative is a tool that demos at 90% and quietly drifts toward the uncurated baseline.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The Genie space that got remodeled.</strong> A documented Databricks Genie deployment started at 8 of 15 benchmark questions correct - 53%, a coin flip with confidence. The team did not swap models or buy anything: they systematically remodeled the space - curated the table scope, wrote instructions, added trusted example queries - and reached 15 of 15. Same tool, same model, same warehouse. The entire difference was paid in curation hours. That is the tax working exactly as designed - and note it was measured against a benchmark question set they built first.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo">
+    <div class="section-kicker">
+      <span class="klabel">Demo · the lever moment</span>
+      <h2>Watch the semantic layer earn its keep <span class="tag demo">★ 12 min · live on screen</span></h2>
+    </div>
+    <p class="lede">Below is the course's teaching simulator over the Daybreak coffee warehouse. Every other lever is already on - schema linking, examples, retrieval - and the semantic layer is the one switch left. You are about to watch the exact failure this session is about, then measure what fixing it is worth.</p>
+
+    <div class="steps">
+      <div class="step"><p>Ask <strong>Q4</strong> (total revenue) with the semantic layer <strong>OFF</strong>. The answer comes back instantly and looks completely plausible - and it is wrong: it counts cancelled and pending orders. This is the silent failure that ships into decisions.</p></div>
+      <div class="step"><p>Toggle <strong>Semantic layer ON</strong> and ask Q4 again. Now "revenue = delivered orders only" is in the system's context, and the number is right. One written definition was the entire difference.</p></div>
+      <div class="step"><p>Try <strong>Q9</strong> (March cancellations) and <strong>Q11</strong> (best channel) with the lever off, then on - churn and "best" are business words, and the same pattern repeats.</p></div>
+      <div class="step"><p>Now run the <strong>scorecard</strong> below: the full 12-question golden set, first without the semantic layer (58%), then with it (92%). One curated document is the single biggest jump on the whole ladder.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="semantic" data-on="" data-q="4,9,11"></div>
+
+    <div class="t2s" data-mode="scorecard" data-levers="schema,examples,rag,semantic" data-on="schema,examples,rag"></div>
+
+    <div class="callout ai">
+      <strong>🤖 What you just watched, honestly labeled</strong>
+      The "model" here is a deterministic simulation built for teaching: each question carries the characteristic mistake real LLMs make when a context lever is missing, so the lesson lands the same way every time. The SQL really executes against a real SQLite database in your browser, and right or wrong is decided by comparing result sets. Real LLMs are noisier - but the measured ladder this course climbs (8% → 25% → 42% → 58% → 92% → 100%) mirrors the published evidence, where the semantic-layer rung is worth +17 to +23 points on its own.
+    </div>
+
+    <div class="callout tip">
+      <strong>The takeaway for your planning meeting</strong>
+      The 58% → 92% jump did not come from a bigger model, a new vendor, or more spend on compute. It came from one page of written business definitions - the cheapest line item in the whole program, and the one most organizations have never funded.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Five questions for your team this week <span class="tag exercise">◐ 20 min total</span></h2>
+    </div>
+    <ul>
+      <li>Ask your BI lead: "Where is our definition of revenue written down today - in a document a system could read, or in people's heads?" The answer prices your semantic-layer gap.</li>
+      <li>Ask which five metrics generate the most rework and cross-team disputes. Those five are the first entries in your semantic layer - the tax with the fastest payback.</li>
+      <li>Ask who would own metric definitions as a product. If no name comes back, you have found the real blocker - it is organizational, not technical.</li>
+      <li>Ask what happens today when a schema changes: who updates the documentation, and how would a text-to-SQL space find out? That answer is your drift exposure.</li>
+      <li>Ask for the last 20 ad-hoc questions the data team answered for executives. That list is your future golden set - session 6 shows you what to do with it.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into decision-ready sessions; the papers and benchmarks stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">dbt-llm-sl-bench (dbt's open-source semantic-layer benchmark)</span><span class="note">Part 2 · the 84-90% vs 98-100% comparison and the silent-to-loud failure flip</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Semantic-layer paired benchmark (arXiv 2604.25149)</span><span class="note">Part 2 · +17 to +23 points from one 4KB semantic document, across three frontier models</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Databricks Genie curation guidance + documented 8/15 → 15/15 case</span><span class="note">Parts 1 and 3 · the recipe and the remodeling story; full pilot mechanics in session 6</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · What does the curation tax actually buy?</p>
+      <button class="qopt" type="button">A · A fine-tuned model that understands your industry better</button>
+      <button class="qopt" type="button">B · The context - metadata, metric definitions, examples, a golden set - that moves accuracy far more than model choice does</button>
+      <button class="qopt" type="button">C · Faster query performance on the warehouse</button>
+      <p class="qwhy">Every documented improvement in this session - Genie's 8/15 to 15/15, the +17 to +23 point semantic-layer gain, the 58% → 92% jump you watched live - came from curated context, not a different model. The tax buys context, and context is the product.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · The semantic layer "flips failures from silent to loud." Why does a leader care?</p>
+      <button class="qopt" type="button">A · Loud errors are easier for engineers to debug quickly</button>
+      <button class="qopt" type="button">B · It proves the vendor's benchmark numbers are real</button>
+      <button class="qopt" type="button">C · A loud error is a visible support ticket; a silent failure is a plausible wrong number that ships into a real decision unnoticed</button>
+      <p class="qwhy">In dbt's benchmark the semantic layer raised accuracy AND changed the failure style: out-of-scope questions now error explicitly instead of guessing. For governance and trust, converting the dangerous failure into the visible one is worth as much as the accuracy gain.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Who maintains the definitions, and on what schedule?</p>
+      <button class="qopt" type="button">A · The data team, continuously - as an owned product, because schema changes and new metrics silently rot yesterday's curation</button>
+      <button class="qopt" type="button">B · The vendor, as part of the subscription</button>
+      <button class="qopt" type="button">C · Nobody after setup - definitions are stable once written</button>
+      <p class="qwhy">No vendor maintains your business meaning. Drift is the hidden recurring charge: a renamed column or a new product line quietly invalidates curation without any error. The budget rule from this session: fund curation as an ongoing product with a named owner and a weekly quality number.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 4 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The curation tax</b><span>The tool is cheap; the metadata, definitions, examples, and golden set are the real cost - all human work, all recurring.</span></div>
+      <div class="cheat-item"><b>The iceberg</b><span>Above the waterline: license + warehouse spend. Below: metadata, metric definitions, example queries, golden set, refresh.</span></div>
+      <div class="cheat-item"><b>Nothing works uncurated</b><span>Fresh Genie space: 8/15 (53%). After systematic remodeling: 15/15. Same tool, same model - only curation changed.</span></div>
+      <div class="cheat-item"><b>The vendor recipe</b><span>Databricks' own guidance: 3-7 tables, 3-5 trusted example queries, ~2 weeks of iteration. Cortex: "the magic is in the YAML."</span></div>
+      <div class="cheat-item"><b>Semantic layer</b><span>Business meaning written down (revenue = delivered only; churn = subscriptions, not orders). It lives in nobody's schema until you write it.</span></div>
+      <div class="cheat-item"><b>The evidence</b><span>+17 to +23 points from one 4KB document (paired benchmark). dbt's benchmark: 98-100% via semantic layer vs 84-90% raw.</span></div>
+      <div class="cheat-item"><b>The failure flip</b><span>Raw text-to-SQL fails silently (plausible wrong number). Semantic layer fails loudly (explicit error). Loud is the safer kind.</span></div>
+      <div class="cheat-item"><b>Budget rule</b><span>Curation is an ongoing product, not a setup task: named owner, weekly golden-set score, maintenance in every schema change.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 4 of 6 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a3-vendor-landscape.html">← Prev: The vendor landscape</a> &nbsp;·&nbsp; <a href="a5-governance-trust.html">Next: Governance + trust →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

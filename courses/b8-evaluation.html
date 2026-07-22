@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 8 · Evaluating your agent - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 8 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 8 of 10</div>
+    <h1>Evaluating your agent: <span class="accent">the number is the deliverable</span></h1>
+    <p class="sub">Seven sessions built DaybreakGPT rung by rung. Tonight the measuring stick itself becomes the skill. You will learn the two metrics the field uses (and why one of them is obsolete), climb the public benchmark ladder from WikiSQL to Spider 2.0, and then meet the scandal: a 2026 audit found that half the gold labels in the most-cited benchmarks are wrong. The takeaway is uncomfortable and liberating - your own golden set, on your own data, audited by you, beats any leaderboard. This session bridges the learn-evals course.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">After b7 multi-candidate</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · Metrics &amp; the benchmark ladder</span>
+      <span class="a3" style="flex:5">18-40 · The scandal + your own harness</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why evaluation is the real deliverable</h2>
+    </div>
+    <p class="lede">Every session so far ended with the same move: run the golden set, read the number. That was not a teaching gimmick - it is the product. A text-to-SQL project without an evaluation harness is a demo; with one, it is an engineering system you can improve, defend, and ship. Tonight you learn to build and - crucially - to <strong>distrust</strong> that harness properly.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The difference between execution accuracy and exact match (and why exact match is dead in the LLM era), the four-benchmark ladder that maps academic scores to enterprise reality, the CIDR 2026 audit that found 52.8-66.1% annotation error rates in the benchmarks everyone cites, and a working rule: your own golden set on your own data beats any public leaderboard - and even your gold labels need auditing.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail</strong>
+      The scorecard on this page runs a deterministic simulated model - each golden question carries the characteristic mistake a real LLM makes when a context lever is missing. The generated SQL genuinely executes against a real SQLite database in your browser and is compared to gold by result set. Real LLMs are noisier; the measurement mechanics are exactly the same.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: METRICS ============ -->
+  <section class="section" id="metrics">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Spider's EX/EM metric contribution</span>
+      <h2>Metrics properly: execution accuracy vs exact match <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Spider (2018) gave the field its two canonical metrics. <strong>Exact Match (EM)</strong> compares the predicted SQL string to the gold SQL string. <strong>Execution Accuracy (EX)</strong> runs the predicted SQL against the database and compares result sets. In the LLM era only one of them survives - because LLMs write SQL that is different from gold and still correct, constantly.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two-lane comparison: exact match compares strings and wrongly fails a correct query; execution accuracy runs both and passes it">
+        <style>
+          .b8aT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b8aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b8aC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b8aM { font: 500 11.5px "SF Mono", Menlo, monospace; fill: #10222E; }
+          .b8aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b8aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="b8aH" x="30" y="34">Same pair of queries, two verdicts - why the field measures results, not strings</text>
+        <text class="b8aM" x="30" y="62">gold: SELECT city, COUNT(*) AS n FROM customers GROUP BY city ORDER BY n DESC LIMIT 1;</text>
+        <text class="b8aM" x="30" y="80">pred: SELECT c.city, COUNT(*) AS n FROM customers c GROUP BY c.city ORDER BY n DESC LIMIT 1;</text>
+        <rect x="30" y="100" width="400" height="24" rx="6" fill="#003B57"/>
+        <text class="b8aT" x="44" y="117">EXACT MATCH · compare the strings</text>
+        <rect x="30" y="124" width="400" height="120" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="b8aC" x="44" y="148">Character-by-character comparison.</text>
+        <text class="b8aC" x="44" y="168">The alias "c." differs from gold, so the</text>
+        <text class="b8aC" x="44" y="188">prediction FAILS - despite being correct.</text>
+        <text class="b8aX" x="44" y="214">Penalizes different-but-correct SQL.</text>
+        <text class="b8aX" x="44" y="232">Obsolete for the LLM era.</text>
+        <rect x="450" y="100" width="400" height="24" rx="6" fill="#0F80CC"/>
+        <text class="b8aT" x="464" y="117">EXECUTION ACCURACY · run both, compare rows</text>
+        <rect x="450" y="124" width="400" height="120" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="b8aC" x="464" y="148">Execute gold and prediction on the database.</text>
+        <text class="b8aC" x="464" y="168">Both return the identical result set, so the</text>
+        <text class="b8aC" x="464" y="188">prediction PASSES - Spider's key contribution.</text>
+        <text class="b8aX" x="464" y="214">Needs a live database to run against.</text>
+        <text class="b8aX" x="464" y="232">The metric this whole course reports.</text>
+        <text class="b8aX" x="30" y="276">EX has its own blind spot: a wrong query can coincidentally match on one dataset. Good golden sets vary the data.</text>
+        <rect x="30" y="296" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b8aN" x="54" y="308">A golden set is not a file of expected SQL - it needs a database to execute against. Results are the truth.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - EX vs EM on the same query pair; only EX survives the LLM era</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Why exact match died - and what EX demands of you<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Pre-LLM parsers were trained to imitate gold SQL, so string comparison roughly worked. LLMs compose SQL freely: different aliases, different join orders, a subquery where gold used a window function. All correct, all EM failures. That is why every number this course has quoted - Spider's ~86-91%, BIRD's 54.89%, Spider 2.0's 10.1% - is execution accuracy.</p>
+        <ul>
+          <li><strong>EX is a systems requirement, not just a metric.</strong> To measure it you need a runnable database with representative data. That is why your golden set lives next to a real (or sampled) copy of the warehouse - and why this course put SQLite in your browser.</li>
+          <li><strong>Compare result sets, not vibes.</strong> The scorecard below does literally this: run generated SQL, run gold SQL, JSON-compare the results. Same mechanics as the academic harnesses.</li>
+          <li><strong>EX inherits the gold label's flaws.</strong> If the gold SQL is wrong, EX faithfully reports correct systems as failures. Hold that thought - it is Part 3.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Bridge to learn-evals: EX is a task-specific eval<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>If you took learn-evals, place EX in that map: it is an offline, golden-set, deterministic-grader evaluation. The grader is the database itself - which is the luxury of text-to-SQL. Most LLM tasks need an LLM judge with all its noise; here, execution gives you a free, perfectly consistent judge. The discipline that course teaches still applies: version the set, re-run on every change, track the trend not the single number, and audit the labels (tonight's Part 3 is that lesson with published receipts).</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE BENCHMARK LADDER ============ -->
+  <section class="section" id="ladder">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers WikiSQL, Spider, BIRD, Spider 2.0 papers</span>
+      <h2>The benchmark ladder as an evaluation lesson <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">The field's four flagship benchmarks form a difficulty ladder, and each rung teaches an evaluation design lesson: what you include in the test set decides what your score means.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ladder of four benchmarks from WikiSQL to Spider 2.0 with scale, frontier scores, and audit error-rate annotations">
+        <style>
+          .b8bT { font: 700 13.5px Inter, sans-serif; fill: #FFFFFF; }
+          .b8bS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.92; }
+          .b8bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b8bC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b8bX { font: 400 12px Inter, sans-serif; fill: #526472; }
+          .b8bE { font: 700 12px Inter, sans-serif; fill: #991B1B; }
+          .b8bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="b8bH" x="30" y="34">Four rungs, twenty years of honesty: scores fall as data gets real</text>
+        <rect x="30" y="238" width="190" height="72" rx="10" fill="#9FCFEE"/>
+        <text class="b8bT" x="44" y="262" fill="#10222E" style="fill:#10222E">WikiSQL · 2017</text>
+        <text class="b8bS" x="44" y="280" style="fill:#10222E">80,654 q · single table</text>
+        <text class="b8bS" x="44" y="296" style="fill:#10222E">Solved. Historical.</text>
+        <rect x="245" y="188" width="190" height="122" rx="10" fill="#3DA0E3"/>
+        <text class="b8bT" x="259" y="212">Spider · 2018</text>
+        <text class="b8bS" x="259" y="230">10,181 q · 200 DBs</text>
+        <text class="b8bS" x="259" y="246">multi-table, clean</text>
+        <text class="b8bS" x="259" y="264">Frontier: ~86-91% EX</text>
+        <text class="b8bS" x="259" y="282">Gave the field EX + EM</text>
+        <rect x="460" y="138" width="190" height="172" rx="10" fill="#0F80CC"/>
+        <text class="b8bT" x="474" y="162">BIRD · 2023</text>
+        <text class="b8bS" x="474" y="180">12,751 pairs · 95 DBs</text>
+        <text class="b8bS" x="474" y="196">33.4 GB · dirty data +</text>
+        <text class="b8bS" x="474" y="212">external knowledge</text>
+        <text class="b8bS" x="474" y="230">Human 92.96%</text>
+        <text class="b8bS" x="474" y="246">GPT-4 54.89%</text>
+        <text class="b8bS" x="474" y="264">1 evidence sentence:</text>
+        <text class="b8bS" x="474" y="280">+20pp for GPT-4</text>
+        <rect x="675" y="88" width="175" height="222" rx="10" fill="#003B57"/>
+        <text class="b8bT" x="689" y="112">Spider 2.0 · 2025</text>
+        <text class="b8bS" x="689" y="130">632 enterprise</text>
+        <text class="b8bS" x="689" y="146">workflow problems</text>
+        <text class="b8bS" x="689" y="162">1,000+ column DBs</text>
+        <text class="b8bS" x="689" y="180">GPT-4o: 10.1%</text>
+        <text class="b8bS" x="689" y="196">(86.6% on Spider 1.0)</text>
+        <text class="b8bS" x="689" y="214">The enterprise cliff</text>
+        <text class="b8bE" x="474" y="332" >Audit: 52.8% label errors (Mini-Dev)</text>
+        <text class="b8bE" x="689" y="332">Audit: 66.1% (Snow)</text>
+        <text class="b8bX" x="30" y="332">Higher rung = closer to your warehouse.</text>
+        <rect x="30" y="344" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b8bN" x="54" y="356">Each rung got more real - and the two most-cited rungs turn out to have broken gold labels. Part 3.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the benchmark ladder, with the audit's error rates stamped on the top rungs</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What each rung teaches an evaluator<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Rung</th><th>What it added</th><th>Evaluation lesson</th></tr></thead>
+          <tbody>
+            <tr><td>WikiSQL (2017)</td><td>Scale: 80,654 questions, but single-table Wikipedia</td><td>A solved benchmark measures nothing - retire tests the field has memorized</td></tr>
+            <tr><td>Spider (2018)</td><td>Multi-table joins, 200 DBs, unseen schemas at test time; introduced EX and EM</td><td>Generalization to new schemas is the real test, not new questions on known schemas</td></tr>
+            <tr><td>BIRD (2023)</td><td>Dirty data, 33.4 GB, external knowledge; human 92.96% vs GPT-4 54.89% at the time</td><td>One sentence of "evidence" per question moved GPT-4 +20pp (34.88 to 54.89) - context in the test set changes everything the score means</td></tr>
+            <tr><td>Spider 2.0 (2025)</td><td>632 real enterprise workflows, 1,000+ columns, 100+ line answers</td><td>GPT-4o falls from 86.6% to 10.1% - academic scores do not transfer to your warehouse</td></tr>
+          </tbody>
+        </table>
+        <p>Notice the BIRD evidence result: the gap between GPT-4 with and without one human-written hint sentence is nearly identical to the human gap with and without the same hints. Context is the bottleneck for people too - which is the course thesis wearing an evaluation hat.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE SCANDAL ============ -->
+  <section class="section" id="scandal">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers CIDR 2026 UIUC benchmark audit (p5-jin)</span>
+      <h2>The scandal: half the gold labels are wrong <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">In a CIDR 2026 paper, a UIUC team audited the benchmarks the whole field ranks itself on. The finding: <strong>52.8% of BIRD Mini-Dev's gold annotations contain errors. Spider 2.0-Snow: 66.1%.</strong> The most common error type is a mismatch between the gold query and the actual data or schema - the "correct answer" does not correctly answer the question on the database as it exists.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What breaks when gold is wrong<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Execution accuracy compares your system's results to gold's results. When gold is wrong, a correct system scores as a failure and a system that reproduces gold's mistake scores as a success. Rankings computed on such labels are noise wearing a leaderboard costume.</p>
+        <ul>
+          <li><strong>The re-scoring proof:</strong> on a corrected subset, the CHESS system jumped from 62% to 81% EX - and from 4th place to 1st. Same system, same predictions; only the labels were fixed.</li>
+          <li><strong>The dominant error family:</strong> gold query vs data/schema mismatch - exactly the class of silent failure this course has taught you to fear in your own systems, appearing in the measuring stick itself.</li>
+          <li><strong>The working conclusions:</strong> read SOTA claims skeptically; never pick a vendor off a leaderboard delta of a few points; and audit your own gold labels with the same energy you audit your agent.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>CHESS was quietly the best system on BIRD Mini-Dev - and nobody knew.</strong> Its team shipped, benchmarked, and sat in 4th place at 62% while systems that happened to echo broken gold labels ranked above it. Only when auditors corrected the labels did its real 81% surface. If a published, peer-scrutinized leaderboard can misrank systems by 19 points, an internal eval nobody has audited certainly can. The audit's companion repo (github.com/uiuc-kang-lab/text_to_sql_benchmarks) documents every corrected label.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The rule that survives: your set, your data, your audit<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Public benchmarks answer "how do models compare on academic tasks" - noisily, it turns out. They cannot answer the only question your stakeholders have: "does it work on <em>our</em> warehouse, <em>our</em> vocabulary, <em>our</em> metric definitions?" A 20-question golden set mined from your real BI backlog beats Spider for that purpose on day one. And the audit lesson applies recursively: have a second analyst re-verify each gold query against the live database, on a schedule, because your schema drifts (b10 makes that a production rule).</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Your benchmark harness - then break its gold <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">The scorecard below is a complete evaluation harness: golden questions, gold SQL, a live database, execution, result-set comparison. With every lever on, DaybreakGPT should hit 12/12. Then we do to it what the auditors did to BIRD.</p>
+
+    <div class="steps">
+      <div class="step"><p>Run the golden set with all levers on. 12/12 - that is 8% (b1) to 100% (b7), all from context. Note each row's verdict is computed by executing, not asserted.</p></div>
+      <div class="step"><p>Now the thought experiment: imagine Q4's gold query <strong>forgot the delivered-only filter</strong> - gold sums every order line. Your agent, correctly filtering to delivered, would return different rows.</p></div>
+      <div class="step"><p>Verdict under broken gold: <strong>✗ silent</strong>. Your agent is scored WRONG for being RIGHT - and a naive agent that also forgot the filter would be scored right for being wrong.</p></div>
+      <div class="step"><p>That is precisely the E2 gold-vs-data mismatch that afflicts 52.8% of BIRD Mini-Dev. Your harness is only as honest as its labels - so gold gets audited too.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="scorecard" data-levers="schema,examples,rag,semantic,selfcorrect" data-on="schema,examples,rag,semantic,selfcorrect"></div>
+
+    <div class="callout tip">
+      <strong>Audit habit</strong>
+      Before trusting any golden set - yours or a benchmark's - pick three questions at random, run the gold SQL by hand, and check the result actually answers the English question on this data. Three minutes, catches the dominant error family.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Prove EX beats EM with your own hands <span class="tag demo">★ 8 min · live SQL</span></h2>
+    </div>
+    <p class="lede">Write two queries that differ as strings but must return identical results. Exact match would fail the pair; execution accuracy passes it. Run both and compare the result tables - they are the same rows.</p>
+
+    <div class="sqlbox" data-caption="Version A - the 'gold' phrasing: bare table name, ORDER BY the alias. Run it and note the result.">
+      <pre class="sql-src">SELECT city, COUNT(*) AS n
+FROM customers
+GROUP BY city
+ORDER BY n DESC
+LIMIT 1;</pre>
+    </div>
+
+    <div class="sqlbox" data-caption="Version B - different string, same answer: alias, COUNT on a column, ORDER BY the expression. EM fails this pair; EX passes it. Now write a version C of your own (try a subquery).">
+      <pre class="sql-src">SELECT c.city, COUNT(c.customer_id) AS n
+FROM customers c
+GROUP BY c.city
+ORDER BY COUNT(c.customer_id) DESC
+LIMIT 1;</pre>
+    </div>
+
+    <div class="callout win">
+      <strong>★ The point, in one sentence</strong>
+      Correctness in this field is a property of results on a database, not of SQL text - which is why a golden set without a database to run against is not an evaluation, just a wish list.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 25-35 min total</span></h2>
+    </div>
+    <ul>
+      <li>In the Demo 1 scorecard, turn levers off one at a time and re-run. For each drop, check which questions flipped and whether they failed loud (error) or silent - you are reading an error analysis, the skill behind every failure-taxonomy paper this course cites.</li>
+      <li>Write a "version C" for Demo 2: a third SQL string (try a subquery or a HAVING-free rewrite) that returns the same single row. Every variant is an EM failure and an EX pass.</li>
+      <li>Draft a 10-question golden set for a database you know: mine the last ad-hoc questions your team actually answered, keep the SQL a human verified, and include at least two vocabulary traps ("active", "churn") on purpose.</li>
+      <li>Audit three of your own gold labels the CIDR way: run each gold query, read the result, and ask "does this actually answer the English question on this data?" Log anything suspicious.</li>
+      <li>Optional reading: the CIDR 2026 audit paper (vldb.org/cidrdb/papers/2026/p5-jin.pdf) and its corrected-label repo, github.com/uiuc-kang-lab/text_to_sql_benchmarks.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into runnable sessions; papers and leaderboards stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Spider (2018) - Execution Accuracy + Exact Match metrics</span><span class="note">Part 1 · the metric pair, why EM is obsolete; Spider scale in Part 2</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">BIRD paper (NeurIPS 2023, arXiv 2305.03111)</span><span class="note">Part 2 · scale, human vs GPT-4 gap, the +20pp evidence-sentence result</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">CIDR 2026 UIUC benchmark audit (p5-jin)</span><span class="note">Part 3 + Demo 1 · 52.8%/66.1% error rates, E2 mismatch, CHESS re-scoring</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">learn-evals course (hub sibling)</span><span class="note">Part 1 · EX placed in the wider eval taxonomy; full discipline lives there</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Why did the field abandon Exact Match in favor of Execution Accuracy?</p>
+      <button class="qopt" type="button">A · EM was too slow to compute on large benchmarks</button>
+      <button class="qopt" type="button">B · LLMs constantly write SQL that differs from gold as a string yet returns the correct result - EM penalizes correct answers</button>
+      <button class="qopt" type="button">C · EX is easier because it does not need the gold SQL at all</button>
+      <p class="qwhy">EM compares strings, so a different alias or join order fails a perfectly correct query. EX executes both and compares result sets - which is also why a golden set must run against a real database, and why EX still inherits any flaw in the gold labels.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · What did the CIDR 2026 UIUC audit find in the flagship benchmarks?</p>
+      <button class="qopt" type="button">A · That models were secretly trained on the test sets</button>
+      <button class="qopt" type="button">B · That execution accuracy and exact match disagree on about half of all questions</button>
+      <button class="qopt" type="button">C · Annotation error rates of 52.8% (BIRD Mini-Dev) and 66.1% (Spider 2.0-Snow), mostly gold-vs-data mismatches; re-scoring moved CHESS from 62% to 81% and 4th to 1st</button>
+      <p class="qwhy">Half or more of the gold labels contain errors, dominated by gold queries that do not match the actual data or schema. Corrected labels changed both scores and rankings - so leaderboard positions are unreliable evidence.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Why does your own golden set beat any public leaderboard for choosing or improving a system?</p>
+      <button class="qopt" type="button">A · It measures your schemas, your vocabulary, and your metric definitions - the things public benchmarks cannot contain and where their labels are often broken anyway</button>
+      <button class="qopt" type="button">B · Because it is larger than public benchmarks</button>
+      <button class="qopt" type="button">C · Because public benchmarks only test open-source models</button>
+      <p class="qwhy">Public benchmarks generalize across domains and, per the audit, carry high label-error rates. A small set mined from your real BI backlog measures the deployment you actually run - provided you audit its gold labels too.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 8 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Execution accuracy (EX)</b><span>Run predicted SQL, run gold SQL, compare result sets. Spider's contribution; the only metric worth repeating.</span></div>
+      <div class="cheat-item"><b>Exact match (EM)</b><span>String comparison. Obsolete: penalizes different-but-correct SQL, which LLMs produce constantly.</span></div>
+      <div class="cheat-item"><b>Golden sets need a database</b><span>EX is measured by executing. A file of expected SQL with nothing to run it on is not an eval.</span></div>
+      <div class="cheat-item"><b>The ladder</b><span>WikiSQL (solved) → Spider (~86-91%) → BIRD (GPT-4 54.89 vs human 92.96) → Spider 2.0 (GPT-4o 10.1%).</span></div>
+      <div class="cheat-item"><b>Evidence moves mountains</b><span>One human hint sentence per BIRD question: +20pp for GPT-4. Context is the bottleneck, even inside a benchmark.</span></div>
+      <div class="cheat-item"><b>The scandal</b><span>CIDR 2026 audit: 52.8% label errors in BIRD Mini-Dev, 66.1% in Spider 2.0-Snow; top error is gold-vs-data mismatch.</span></div>
+      <div class="cheat-item"><b>The re-scoring proof</b><span>On corrected labels CHESS went 62% → 81% EX and 4th → 1st. Leaderboard rankings are unreliable evidence.</span></div>
+      <div class="cheat-item"><b>The rule</b><span>Your own golden set on your own data beats any leaderboard - and your gold labels get audited too, on a schedule.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 8 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b7-multi-candidate.html">← Prev: Multi-candidate</a> &nbsp;·&nbsp; <a href="b9-framework-tour.html">Next: The framework tour →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

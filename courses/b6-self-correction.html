@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 6 · Self-correction - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 6 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 6 of 10</div>
+    <h1>Self-correction: <span class="accent">let the database talk back</span></h1>
+    <p class="sub">DaybreakGPT stands at 11/12 after the semantic layer. The last miss is Q12 - a dialect slip that throws a real database error. Tonight the system stops being a one-shot generator and starts acting: execute, catch the error, feed the message back, regenerate. That loop takes our golden set to 100% - and then this session tells you the uncomfortable truth about what the loop can never catch.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">Rung 5 of 5 · after b5</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-18 · The loop &amp; its honest limit</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: catch the error</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Session 6</span>
+      <h2>Where we are on the ladder</h2>
+    </div>
+    <p class="lede">Five rungs so far, all of them <strong>context</strong>: schema linking (b2), few-shot examples (b3), RAG over metadata (b4), the semantic layer (b5). On our golden set that ladder read 8% → 25% → 42% → 58% → 92%. Tonight's rung is different in kind: instead of feeding the model more before it answers, we let the system <strong>observe the consequence</strong> of its answer and try again. The model is still not the product - but now the loop around it is part of the context too.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The execute-catch-retry loop and where it came from (DIN-SQL's zero-shot self-correction module), its agentic descendants (MAC-SQL's Refiner, the LangChain SQL agent), a 100% score on our golden set - and the honest limit that keeps you employed: self-correction only catches loud failures, and the dangerous ones are silent.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Simulation honesty</strong>
+      The playground "model" is deterministic and built for teaching: each missing lever produces the characteristic real-world failure, and the retry behavior mirrors how real Refiner agents react to real error messages. The SQL genuinely executes against SQLite in your browser - so loud vs silent is measured, not asserted.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE LOOP ============ -->
+  <section class="section" id="loop">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers DIN-SQL, MAC-SQL, LangChain agent flow</span>
+      <h2>The loop: execute, catch, feed back, regenerate <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">The idea is almost embarrassingly simple. Run the generated SQL. If the database throws an error, do not show the user the error - append the error message to the prompt and ask the model to fix its own query. The database becomes a free, perfectly honest critic that speaks exactly when something is loudly wrong.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The self-correction loop: generate SQL, execute, on error feed the message back and regenerate">
+        <style>
+          .b6aT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b6aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .b6aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b6aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b6aArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b6ah); }
+          .b6aLoop { stroke: #7C3AED; stroke-width: 2.5; fill: none; marker-end: url(#b6av); stroke-dasharray: 6 4; }
+        </style>
+        <defs>
+          <marker id="b6ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+          <marker id="b6av" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#7C3AED"/>
+          </marker>
+        </defs>
+        <rect x="40" y="60" width="180" height="70" rx="10" fill="#7C3AED"/>
+        <text class="b6aT" x="56" y="90">1 · Generate SQL</text>
+        <text class="b6aS" x="56" y="110">model writes a query</text>
+        <rect x="290" y="60" width="170" height="70" rx="10" fill="#0F80CC"/>
+        <text class="b6aT" x="306" y="90">2 · Execute</text>
+        <text class="b6aS" x="306" y="110">run it on the database</text>
+        <rect x="530" y="60" width="150" height="70" rx="10" fill="#3DA0E3"/>
+        <text class="b6aT" x="546" y="90">3 · Rows OK</text>
+        <text class="b6aS" x="546" y="110">→ answer the user</text>
+        <rect x="290" y="200" width="170" height="70" rx="10" fill="#991B1B"/>
+        <text class="b6aT" x="306" y="230">2b · Error!</text>
+        <text class="b6aS" x="306" y="250">"no such function..."</text>
+        <path class="b6aArr" d="M220,95 L288,95"/>
+        <path class="b6aArr" d="M460,95 L528,95"/>
+        <path class="b6aArr" d="M375,130 L375,198"/>
+        <path class="b6aLoop" d="M290,235 C170,235 130,180 130,135"/>
+        <text class="b6aX" x="118" y="262">feedback edge: the ERROR MESSAGE is appended</text>
+        <text class="b6aX" x="118" y="280">to the prompt and stage 1 runs again</text>
+        <text class="b6aX" x="530" y="230">Cap the retries (2-3). If it still errors,</text>
+        <text class="b6aX" x="530" y="248">fail loudly to the user - never guess.</text>
+        <rect x="40" y="304" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b6aN" x="64" y="316">The database is the only critic in the stack that is never wrong about a loud failure.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the self-correction loop; the error message is the feedback edge</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Where the loop came from - DIN-SQL to agents<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The research lineage is short and worth knowing by name:</p>
+        <ul>
+          <li><strong>DIN-SQL</strong> introduced the origin move: a <strong>zero-shot self-correction module</strong> - after generating SQL, a dedicated prompt asks the model to inspect and fix its own query. No execution yet, just a second look.</li>
+          <li><strong>MAC-SQL</strong> made it agentic with three cooperating agents: a schema-linking Selector, a Decomposer that splits the question and generates, and a <strong>Refiner</strong> that executes the SQL and uses the database's runtime error to regenerate. The Refiner is tonight's loop with a name badge.</li>
+          <li><strong>The LangChain SQL agent</strong> ships the same shape as a reusable flow: discover tables → inspect schema → generate → validate → execute → <strong>retry on error</strong>. Notice how the first two stages are b2's schema linking - the agent packages the whole ladder.</li>
+        </ul>
+        <p>What actually travels around the loop is text. Here is the entire trick as a prompt:</p>
+      </div>
+    </details>
+
+    <div class="prompt-box">
+      <span class="label">The retry prompt - the whole loop is one message</span>
+You wrote this SQLite query:
+
+SELECT ROUND(100.0 * COUNT(DISTINCT o.customer_id)
+     / COUNT(DISTINCT c.customer_id), 1) AS pct
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.customer_id
+ AND DATEDIFF(day, c.signup_date, o.order_date) &lt;= 30
+WHERE c.signup_date &gt;= '2026-01-01' AND c.signup_date &lt; '2026-02-01';
+
+The database returned this error:
+
+  no such function: DATEDIFF
+
+Fix the query. This database is SQLite - use date(c.signup_date, '+30 days')
+style date arithmetic, not T-SQL functions. Return only the corrected SQL.
+    </div>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why dialect slips are the classic catchable error<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Our Q12 fails with <code>DATEDIFF(day, ...)</code> - which is T-SQL, not SQLite. Models are trained on an internet full of SQL Server, MySQL, and Postgres answers, so dialect bleed is constant even when every context lever is on. It is also the <strong>perfect</strong> self-correction customer: the database refuses instantly, the error message names the exact function, and the fix is mechanical. Hallucinated columns and tables (b2's territory) are the same shape - loud, named in the error, retryable. This is why production agents treat the executor as a validator, not just a delivery mechanism.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE HONEST LIMIT ============ -->
+  <section class="section" id="limit">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers loud vs silent failure, b1 callback</span>
+      <h2>The honest limit: no error, no signal, no catch <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Here is the sentence to tattoo on the architecture diagram: <strong>self-correction only catches loud failures</strong>. A silent wrong answer executes cleanly, returns plausible rows, and never raises an error - so there is nothing to feed back. The loop's feedback signal is the error message; no message, no loop.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 310" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Loud failures produce an error signal the loop can catch; silent failures produce no signal and pass through">
+        <style>
+          .b6bT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b6bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b6bC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b6bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b6bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b6bArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b6bh); }
+        </style>
+        <defs>
+          <marker id="b6bh" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b6bH" x="30" y="36">Two queries enter the loop - only one gives it anything to work with</text>
+        <rect x="30" y="60" width="400" height="24" rx="6" fill="#991B1B"/>
+        <text class="b6bT" x="44" y="77">LOUD · DATEDIFF in SQLite (our Q12)</text>
+        <rect x="30" y="84" width="400" height="110" fill="#FEF2F2" stroke="#FCA5A5"/>
+        <text class="b6bC" x="44" y="106">execute → "no such function: DATEDIFF"</text>
+        <text class="b6bC" x="44" y="128">Signal exists. Loop catches it, retries</text>
+        <text class="b6bC" x="44" y="146">with date() arithmetic, gets gold. ✓</text>
+        <text class="b6bX" x="44" y="176">Cost: one extra model call. Cheap.</text>
+        <rect x="450" y="60" width="400" height="24" rx="6" fill="#7C3AED"/>
+        <text class="b6bT" x="464" y="77">SILENT · revenue incl. cancelled (our Q4)</text>
+        <rect x="450" y="84" width="400" height="110" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="b6bC" x="464" y="106">execute → rows come back, no error</text>
+        <text class="b6bC" x="464" y="128">No signal. Loop waves it through and the</text>
+        <text class="b6bC" x="464" y="146">wrong number ships to the user. ✗</text>
+        <text class="b6bX" x="464" y="176">Only b5's semantic layer stops this one.</text>
+        <text class="b6bX" x="30" y="226">The levers are complements, not substitutes: retries fix loud, definitions fix silent.</text>
+        <rect x="30" y="252" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b6bN" x="54" y="264">If a vendor says "our agent retries until it is correct" - ask: correct by whose error message?</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - self-correction catches loud failures only; silent ones carry no signal</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The simulator enforces this truth<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>In the playground below, the self-correction lever retries <strong>only</strong> when SQLite actually throws. Turn the semantic layer off and self-correction on, then ask Q4: the model sums every order line including cancelled orders, the query runs perfectly, and self-correction does nothing - because there is nothing loud to catch. That is not a simulator shortcut; it is the mechanism. Real Refiner agents have exactly this blind spot.</p>
+        <p>b1 gave you the danger ranking: silent wrong &gt; loud error &gt; no answer. Tonight refines it: self-correction <strong>converts some loud failures into right answers</strong>, which quietly increases the share of remaining failures that are silent. A system with retries can feel more trustworthy while its residual errors get more dangerous. Measurement (b8) is the counterweight.</p>
+        <div class="callout tip">
+          <strong>Design rule for your own agent</strong>
+          Treat the executor's error channel and the semantic layer as two different sensors. Retries handle what the database can see; definitions handle what only the business can see. Never let a green "query succeeded" badge stand in for "answer is correct".
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: AGENTIC FRAMING ============ -->
+  <section class="section" id="agentic">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers Spider 2.0 agents story</span>
+      <h2>The first rung where the system acts <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Every lever before tonight was passive: better context in, one answer out. Self-correction is the first rung where DaybreakGPT <strong>acts</strong> - it executes, observes the world's response, and changes its behavior. That is the textbook definition of an agent, and it is not a buzzword upgrade: it is the single biggest lever on the hardest benchmark in the field.</p>
+    <details class="card">
+      <summary><span class="mode live">Live</span>What acting is worth on Spider 2.0<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Recall b1's cliff: bare frontier models score around <strong>10-17%</strong> on Spider 2.0's real enterprise problems (GPT-4o 10.1%, o1-preview 17.1-21.3%). By mid-2026 the leaderboard is dominated by <strong>agentic systems</strong> - scaffolds that discover tables, retrieve metadata, execute, read errors, and retry - with the top Snow entries near 96.7. Same underlying models, radically different results. The delta is not intelligence; it is the permission to observe and act.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The leaderboard flip.</strong> When Spider 2.0 launched, its authors framed the ~10% scores as proof that enterprise text-to-SQL was unsolved. Within roughly a year, agent scaffolds - every one of them built from the moves in this track (schema retrieval, metadata RAG, execute-and-retry) - took the Snow setting from unsolved to ~97. No new model generation did that. A loop did. When you read "agents dominate the leaderboard", translate it as: context engineering plus the retry loop you built tonight.</p>
+        </div>
+        <p>Keep b8's skepticism handy though: the same benchmark family was later audited at a 66.1% annotation error rate on Spider 2.0-Snow, so treat precise leaderboard positions as weather, not climate. The direction - agents massively outscore one-shot models - survives the audit.</p>
+      </div>
+    </details>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Retry budgets, latency, and cost<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Each retry is another model call plus another execution, so production agents cap the loop: two or three attempts, then surface the failure honestly. Latency compounds too - a chat user waits through every attempt. A useful pattern: retry cheaply on loud errors, but log every retried question into your golden-set backlog (b8), because a question that needed two attempts today is a question your context is underserving. The retry loop is also a diagnostic instrument, not just a bandage.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Catch a loud one, miss a silent one <span class="tag demo">★ 14 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">DaybreakGPT below starts at b5's configuration: schema, examples, RAG, and semantic layer ON; self-correction OFF. You will watch the loop earn its keep on Q12 - and then watch it stand there helplessly while Q4 fails silently.</p>
+
+    <div class="steps">
+      <div class="step"><p>Ask <strong>Q12</strong> (share of January signups ordering within 30 days). It fails <strong>loud</strong>: DATEDIFF is T-SQL, SQLite refuses. Read the error - that message is the raw material of the loop.</p></div>
+      <div class="step"><p>Toggle <strong>Self-correction ON</strong> and ask Q12 again. Watch the note appear: <em>1st attempt errored - self-correction caught the database error and retried</em>. The retry lands the gold answer.</p></div>
+      <div class="step"><p>Now turn <strong>Semantic layer OFF</strong>, keep self-correction ON, and ask <strong>Q4</strong> (total revenue). The SQL runs fine, the number looks great - and it silently includes cancelled orders. No error, no catch.</p></div>
+      <div class="step"><p>Ask <strong>Q2</strong> with schema linking still on, then mentally replay b1: back then Q2 hallucinated a column and errored. Loud failures are exactly the family this lever retires - and only that family.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="schema,examples,rag,semantic,selfcorrect" data-on="schema,examples,rag,semantic" data-q="12,2,4"></div>
+
+    <div class="callout tip">
+      <strong>See what the retry actually fixed</strong>
+      The corrected Q12 uses SQLite date arithmetic. Run the gold version yourself - then swap <code>date(c.signup_date, '+30 days')</code> back to a DATEDIFF call and read the exact error message the loop consumed.
+    </div>
+    <div class="sqlbox" data-caption="Gold Q12: SQLite date arithmetic. Replace the date() expression with DATEDIFF(day, c.signup_date, o.order_date) <= 30 and re-run to reproduce the loud failure the loop catches.">
+      <pre class="sql-src">SELECT ROUND(100.0 * COUNT(DISTINCT o.customer_id)
+     / COUNT(DISTINCT c.customer_id), 1) AS pct
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.customer_id
+  AND o.order_date <= date(c.signup_date, '+30 days')
+WHERE c.signup_date >= '2026-01-01' AND c.signup_date < '2026-02-01';</pre>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>The full ladder: 12 out of 12 <span class="tag demo">★ 8 min · run the golden set</span></h2>
+    </div>
+    <p class="lede">All five levers on. Run the golden set and watch the bar hit the top: 8% → 25% → 42% → 58% → 92% → <strong>100%</strong>. Enjoy it for exactly one paragraph.</p>
+
+    <div class="t2s" data-mode="scorecard" data-levers="schema,examples,rag,semantic,selfcorrect" data-on="schema,examples,rag,semantic,selfcorrect"></div>
+
+    <div class="callout win">
+      <strong>★ Now puncture the triumph</strong>
+      100% on 12 curated questions is not production. It means our context stack covers our known question shapes - nothing more. Real users ask question 13, then 130; schemas drift; definitions change; a real LLM adds noise our simulator deliberately removes. The number that matters is not tonight's 100% - it is how fast you detect the first question that breaks it. That is evaluation as a discipline, and it is the entire point of b8.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 20-30 min total</span></h2>
+    </div>
+    <ul>
+      <li>In Demo 1, run Q12 with self-correction off, read the full SQLite error, then toggle the lever and re-run. Write down in one sentence what information the retry prompt received that the first prompt lacked.</li>
+      <li>With self-correction ON and the semantic layer OFF, ask Q4, Q9, and Q11 in the playground. Count how many silent failures the loop caught. (Spoiler: zero. Say why in your own words.)</li>
+      <li>In the live SQL editor, break the gold Q12 three different loud ways - misspell a table, call DATEDIFF, drop a parenthesis - and collect the three error messages. Rank them by how useful each would be to a retrying model.</li>
+      <li>Hand-write the retry prompt for your favorite of those three errors, following the prompt-box pattern above. This is the entire implementation of tonight's lever - notice there is no magic in it.</li>
+      <li>Optional reading: DIN-SQL's self-correction section, then skim MAC-SQL's three-agent architecture and label which agent maps to b2, which to b3/b4, and which to tonight.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This session distills the self-correction lineage into a runnable loop; the papers stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">DIN-SQL - zero-shot self-correction module</span><span class="note">Part 1 · the origin move: a dedicated prompt that asks the model to fix its own SQL</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">MAC-SQL - three-agent architecture (Selector / Decomposer / Refiner)</span><span class="note">Part 1 · the Refiner executes and regenerates on runtime errors - tonight's loop, agentified</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">LangChain SQL agent flow (discover → inspect → generate → validate → execute → retry)</span><span class="note">Part 1 · the reusable packaging of the whole ladder; full framework tour in b9</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Which failures can the self-correction loop catch?</p>
+      <button class="qopt" type="button">A · All of them - it re-checks every answer against the question</button>
+      <button class="qopt" type="button">B · Only loud ones - a silent wrong answer raises no error, so there is no signal to feed back</button>
+      <button class="qopt" type="button">C · Only silent ones - loud errors already stopped the query, so nothing is left to fix</button>
+      <p class="qwhy">The loop's trigger is a database error. Q12's DATEDIFF throws and gets caught; Q4's cancelled-orders revenue runs cleanly and sails straight through. Silent failures need b5's definitions, not retries.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · Where does the loop's feedback signal come from?</p>
+      <button class="qopt" type="button">A · A second LLM that critiques the first one's SQL</button>
+      <button class="qopt" type="button">B · The user, who flags wrong answers in the chat interface</button>
+      <button class="qopt" type="button">C · The database's error message, appended to the prompt for the retry</button>
+      <p class="qwhy">The executor is the critic: "no such function: DATEDIFF" names the exact problem, for free, with zero false positives. LLM judges and user feedback exist (b7, b8) but tonight's lever runs on the error message alone.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Where did self-correction originate in the research lineage?</p>
+      <button class="qopt" type="button">A · DIN-SQL's zero-shot self-correction module - a dedicated prompt asking the model to fix its own query</button>
+      <button class="qopt" type="button">B · The Spider 2.0 leaderboard rules, which require every submission to retry failed queries</button>
+      <button class="qopt" type="button">C · Snowflake Cortex Analyst's YAML semantic model</button>
+      <p class="qwhy">DIN-SQL introduced the module; MAC-SQL's Refiner agent made it execution-guided; the LangChain SQL agent ships it as a reusable flow. Benchmarks measure the loop - they did not invent it.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 6 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The loop</b><span>Execute → catch database error → append the error message to the prompt → regenerate. Cap at 2-3 retries.</span></div>
+      <div class="cheat-item"><b>Origin</b><span>DIN-SQL's zero-shot self-correction module; MAC-SQL's Refiner made it execution-guided; LangChain agent packaged it.</span></div>
+      <div class="cheat-item"><b>Agent flow</b><span>Discover tables → inspect schema → generate → validate → execute → retry. The ladder, as a loop.</span></div>
+      <div class="cheat-item"><b>The limit</b><span>Only LOUD failures get caught. No error = no signal = no retry. Silent wrong answers pass untouched.</span></div>
+      <div class="cheat-item"><b>Classic catch</b><span>Dialect slips (DATEDIFF in SQLite), hallucinated columns/tables. The error names the fix.</span></div>
+      <div class="cheat-item"><b>Complements</b><span>Retries fix loud; semantic definitions fix silent. Two sensors, never substitutes.</span></div>
+      <div class="cheat-item"><b>The rung</b><span>Our ladder: 92% → 100% (Q12 recovered). Spider 2.0: bare models 10-17%, agentic systems dominate (~97 Snow).</span></div>
+      <div class="cheat-item"><b>Puncture</b><span>100% on 12 curated questions is coverage, not production. b8 turns measurement itself into the skill.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 6 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b5-semantic-layer.html">← Prev: The semantic layer</a> &nbsp;·&nbsp; <a href="../index.html">All sessions</a> &nbsp;·&nbsp; <a href="b7-multi-candidate.html">Next: Multi-candidate →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

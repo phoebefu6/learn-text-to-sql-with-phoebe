@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 1 · Meet the problem - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 1 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 1 of 10</div>
+    <h1>Meet the problem: <span class="accent">English in, SQL out</span></h1>
+    <p class="sub">This track builds DaybreakGPT - a text-to-SQL agent over the Daybreak coffee warehouse you may know from learn-sql. Tonight you meet the naive version: dump the schema into a prompt and hope. You will watch it fail on a real golden set, measure exactly how badly, and learn why that number - not the demo - is the only thing that matters. Every session after this adds one accuracy lever and the bar climbs.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">Start here</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · Anatomy &amp; the naive baseline</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: break DaybreakGPT</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>How this track works</h2>
+    </div>
+    <p class="lede">Ten sessions, one running project: <strong>DaybreakGPT</strong>, a system that turns plain-English questions into SQL over the six-table Daybreak warehouse. The whole field's honest story fits one sentence: <strong>the model is not the product - context is</strong>. So we climb a ladder: baseline (tonight) → schema linking (b2) → few-shot examples (b3) → RAG over metadata (b4) → a semantic layer (b5) → self-correction (b6) → multi-candidate (b7) - measuring the same 12-question golden set at every rung. b8 turns measurement itself into the skill, b9 tours the real frameworks, b10 ships it.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The anatomy of every text-to-SQL system ever shipped (context → generate → execute → answer), a naive baseline you built and broke yourself, the two failure families (loud vs silent - and why silent is the dangerous one), and a baseline accuracy number on your own golden set that the next nine sessions exist to move.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail, up front</strong>
+      The "model" in this course's playgrounds is a deterministic simulation built for teaching: each golden question carries the characteristic mistake real LLMs make when a given piece of context is missing. The SQL it produces genuinely executes against a real SQLite database in your browser. Real LLMs are noisier - but they fail in exactly these shapes, at rates the research on this page documents.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: ANATOMY ============ -->
+  <section class="section" id="anatomy">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers survey arXiv 2408.05109 framing</span>
+      <h2>What a text-to-SQL system actually is <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Strip away the vendor gloss and every text-to-SQL product - Databricks Genie, Snowflake Cortex Analyst, an open-source Vanna deployment, the agent you build here - is the same four-stage pipeline. The differences that matter all live in stage 2: <strong>what context reaches the model</strong>.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The text-to-SQL pipeline: question, context assembly, LLM generates SQL, execute, answer">
+        <style>
+          .t1T { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .t1S { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .t1C { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .t1X { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .t1N { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .t1Arr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#t1ah); }
+        </style>
+        <defs>
+          <marker id="t1ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <rect x="30" y="60" width="150" height="70" rx="10" fill="#003B57"/>
+        <text class="t1T" x="46" y="90">1 · Question</text>
+        <text class="t1S" x="46" y="110">"Total revenue?"</text>
+        <rect x="230" y="60" width="180" height="70" rx="10" fill="#7C3AED"/>
+        <text class="t1T" x="246" y="84">2 · Context</text>
+        <text class="t1S" x="246" y="102">schema · examples · docs</text>
+        <text class="t1S" x="246" y="118">metric definitions</text>
+        <rect x="460" y="60" width="150" height="70" rx="10" fill="#0F80CC"/>
+        <text class="t1T" x="476" y="90">3 · LLM</text>
+        <text class="t1S" x="476" y="110">generates SQL</text>
+        <rect x="660" y="60" width="180" height="70" rx="10" fill="#3DA0E3"/>
+        <text class="t1T" x="676" y="84">4 · Execute</text>
+        <text class="t1S" x="676" y="102">run on the database</text>
+        <text class="t1S" x="676" y="118">rows → answer</text>
+        <path class="t1Arr" d="M180,95 L228,95"/>
+        <path class="t1Arr" d="M410,95 L458,95"/>
+        <path class="t1Arr" d="M610,95 L658,95"/>
+        <path class="t1Arr" d="M750,130 C750,190 480,195 415,150" stroke-dasharray="5 4"/>
+        <text class="t1X" x="455" y="185">optional loop: errors fed back = self-correction (b6)</text>
+        <text class="t1X" x="30" y="230">Everything the course changes lives in box 2. The model in box 3 barely moves the number by comparison.</text>
+        <rect x="30" y="252" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="t1N" x="54" y="264">Same pipeline in Genie, Cortex Analyst, Vanna, WrenAI, and DaybreakGPT. Vendors sell you box 2.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the four-stage pipeline every text-to-SQL system shares</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The promise - and the 86% → 10% cliff<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>"Just ask your data a question" is the oldest promise in BI, and LLMs finally made the demo work. On the academic Spider benchmark, frontier models score in the high 80s - which is why every demo you have seen looks flawless. Then researchers built <strong>Spider 2.0</strong> from real enterprise databases (1,000+ columns, 100+ line answers) and the same models scored <strong>~10%</strong>. GPT-4o: 86.6% on Spider, 10.1% on Spider 2.0.</p>
+        <ul>
+          <li><strong>The cliff is not a model problem.</strong> The models are identical in both tests. What changed is the gap between question and context: real schemas are huge, cryptic, and full of business meaning no schema dump carries.</li>
+          <li><strong>Agents close it with context, not IQ.</strong> By mid-2026 agentic systems top Spider 2.0-Snow near 97 - by retrieving metadata, checking errors, retrying. Every one of those moves is a session in this track.</li>
+          <li><strong>Your job title in this field is context engineer.</strong> That is the honest name for the work.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>Salesforce shipped it and told the truth.</strong> Their production text-to-SQL agent launched at roughly 50% efficacy. The fix that got them to ~80% was not a better model - it was generating 10 candidate queries per question and scoring them (that trick is session b7). Production text-to-SQL is engineering around the model, not worshipping it.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why this course simulates the model<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Three reasons. <strong>Zero setup:</strong> everything on these pages runs in your browser - real SQLite via WebAssembly, no API keys, no bills. <strong>Determinism:</strong> a real LLM gives a different wrong answer each run, which makes terrible teaching; the simulator always makes the canonical mistake, so the lesson lands. <strong>Honesty:</strong> each simulated failure is drawn from the documented failure taxonomies - hallucinated columns and wrong schema picks alone cause over 80% of real execution failures in published error analyses.</p>
+        <p>When you want the real thing: the same golden-set method works with any live model, and session b9 maps everything here onto Vanna, WrenAI, and the LangChain SQL agent - where the "model" is Claude, GPT, or a local Ollama.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE NAIVE BASELINE ============ -->
+  <section class="section" id="naive">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers Vanna accuracy research, failure taxonomies</span>
+      <h2>The naive baseline: schema dump and pray <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">The obvious first build - paste the CREATE TABLE statements into a prompt, append the question - is where everyone starts, including the vendors. Here is what that prompt actually looks like, and the two ways it fails.</p>
+
+    <div class="prompt-box">
+      <span class="label">The entire naive DaybreakGPT - one prompt</span>
+You are a SQL expert. Given this schema, write one SQLite query
+that answers the user's question. Return only SQL.
+
+CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT,
+  city TEXT, country TEXT, signup_date TEXT, plan TEXT);
+CREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT,
+  category TEXT, price REAL, roast TEXT);
+CREATE TABLE orders (order_id INTEGER PRIMARY KEY, customer_id INTEGER,
+  order_date TEXT, status TEXT, channel TEXT);
+CREATE TABLE order_items (order_id INTEGER, product_id INTEGER,
+  quantity INTEGER, unit_price REAL);
+CREATE TABLE subscriptions (sub_id INTEGER PRIMARY KEY, customer_id INTEGER,
+  product_id INTEGER, start_date TEXT, cancel_date TEXT, monthly_qty INTEGER);
+CREATE TABLE events (event_id INTEGER PRIMARY KEY, customer_id INTEGER,
+  event_date TEXT, event_type TEXT);
+
+Question: What is our total revenue?
+    </div>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 310" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two failure families: loud failures error out, silent failures return plausible wrong numbers">
+        <style>
+          .t2T { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .t2H { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .t2C { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .t2X { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .t2N { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="t2H" x="30" y="36">Two failure families - only one of them warns you</text>
+        <rect x="30" y="60" width="400" height="24" rx="6" fill="#991B1B"/>
+        <text class="t2T" x="44" y="77">LOUD · the database throws an error</text>
+        <rect x="30" y="84" width="400" height="120" fill="#FEF2F2" stroke="#FCA5A5"/>
+        <text class="t2C" x="44" y="106">SELECT SUM(amount) FROM orders;</text>
+        <text class="t2X" x="44" y="126">→ no such column: amount</text>
+        <text class="t2C" x="44" y="150">Hallucinated tables and columns, dialect slips.</text>
+        <text class="t2C" x="44" y="168">Annoying but HONEST - you know it failed,</text>
+        <text class="t2C" x="44" y="186">and an agent can catch and retry it (b6).</text>
+        <rect x="450" y="60" width="400" height="24" rx="6" fill="#7C3AED"/>
+        <text class="t2T" x="464" y="77">SILENT · runs fine, answer is wrong</text>
+        <rect x="450" y="84" width="400" height="120" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="t2C" x="464" y="106">SELECT SUM(quantity * unit_price)</text>
+        <text class="t2C" x="464" y="122">FROM order_items;  -- includes cancelled!</text>
+        <text class="t2X" x="464" y="142">→ 4,187.50 · looks completely plausible</text>
+        <text class="t2C" x="464" y="166">Wrong metric definition, wrong join, missing</text>
+        <text class="t2C" x="464" y="184">filter. Nothing warns you. This one ships.</text>
+        <text class="t2X" x="30" y="236">Published error analyses: schema-linking mistakes alone cause 80%+ of execution failures. The silent family is why.</text>
+        <rect x="30" y="258" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="t2N" x="54" y="270">The danger ranking is: silent wrong &gt; loud error &gt; no answer. Executives only ever see the first kind.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - loud vs silent failures; the silent ones are the business risk</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>What the numbers say about the naive approach<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Vanna's team (the most-starred open-source framework, b9 tells its full story) measured exactly this ladder on their own workloads, and the shape repeats across the research:</p>
+        <table class="clean">
+          <thead><tr><th>Context strategy</th><th>Reported accuracy</th><th>This track</th></tr></thead>
+          <tbody>
+            <tr><td>Schema only (tonight's baseline)</td><td>~3% on their benchmark; ~10% in an independent enterprise case study</td><td>b1</td></tr>
+            <tr><td>+ static SQL examples in the prompt</td><td>20-60% depending on model</td><td>b3</td></tr>
+            <tr><td>+ contextually retrieved examples (RAG)</td><td>~80%</td><td>b4</td></tr>
+          </tbody>
+        </table>
+        <p>And the semantic-layer rung (b5) has the strongest published evidence of all: a 2026 paired benchmark measured <strong>+17 to +23 percentage points</strong> across three frontier models from adding a 4KB semantic document; dbt's benchmark hit 100% on in-scope questions through a semantic layer. Keep the skepticism switched on though - vendor numbers use vendor benchmarks, a theme b8 teaches you to defend against.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The BI team that piloted a chat-with-data tool.</strong> Week one: the demo wowed the exec sponsor on five rehearsed questions. Week three: a regional manager asked "revenue last quarter" and got a number 30% high - the tool summed list prices instead of order line prices and nobody noticed for days. That is a silent failure in the wild. The fix was not a new tool; it was defining revenue in one place the model could read (b5) and a golden set that would have caught it in minutes (tonight + b8).</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE GOLDEN SET ============ -->
+  <section class="section" id="golden">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers Spider/BIRD execution-accuracy metric</span>
+      <h2>The golden set: how you measure any of this <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">You cannot improve what you do not measure, and you cannot trust a demo. The professional move - same one Spider and BIRD use, same one Databricks tells Genie curators to set up - is a <strong>golden set</strong>: real questions your business asks, each paired with SQL a human verified. Run the system, execute its SQL, compare result sets to gold. The match rate is <strong>execution accuracy (EX)</strong> - the only number in this field worth repeating.</p>
+    <details class="card">
+      <summary><span class="mode live">Live</span>DaybreakGPT's 12 golden questions<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Our golden set spans the difficulty that kills naive systems: simple counts (Q1), correct column names (Q2-Q3), multi-table revenue with a metric definition (Q4, Q10, Q11), quantity vs line-count traps (Q5-Q6), business-vocabulary words like "active" and "churn" that appear nowhere in the schema (Q7, Q9), date handling (Q8, Q12). Twelve questions is small - real teams run 50-200 - but the mechanics are identical, and you can read every one.</p>
+        <p>Compare-by-result matters: two different SQL strings that return the same rows both count as correct. That is why the field measures execution accuracy, not string match - and why a golden set needs a database to run against, not just a file of expected SQL.</p>
+      </div>
+    </details>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where golden sets come from in a real team<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Mine the BI backlog:</strong> the last 50 ad-hoc questions analysts actually answered, with the SQL they wrote - already gold-labeled by production use.</li>
+          <li><strong>Interview the stakeholders</strong> the tool is for; their first 10 questions are your first 10 rows.</li>
+          <li><strong>Include traps on purpose:</strong> every ambiguous metric ("revenue" - gross? delivered-only?) and every vocabulary word ("active", "churned") your org uses. Those are where silent failures live.</li>
+          <li><strong>Version it and re-run on every change</strong> - schema migration, prompt tweak, model upgrade. b8 builds this into a habit.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Break DaybreakGPT, question by question <span class="tag demo">★ 14 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Below is DaybreakGPT at rung zero - no schema linking, no examples, no retrieval, no semantic layer, no self-correction. Ask it the golden questions and watch both failure families with your own eyes. The SQL it writes really executes against Daybreak in your browser.</p>
+
+    <div class="steps">
+      <div class="step"><p>Ask <strong>Q1</strong> (how many customers). It gets this right - even naive systems handle trivial questions, which is exactly how demos mislead.</p></div>
+      <div class="step"><p>Ask <strong>Q2</strong> (Pro-plan customers). Watch a <strong>loud</strong> failure: it invents a <code>subscription_tier</code> column and SQLite refuses. You know instantly.</p></div>
+      <div class="step"><p>Ask <strong>Q4</strong> (total revenue). Watch the dangerous one: it sums every order line including cancelled orders. The number looks perfect. This is a <strong>silent</strong> failure - read the "Why" note under the result.</p></div>
+      <div class="step"><p>Ask <strong>Q11</strong> (best channel). It answers "most orders" when you asked "most revenue" - metric ambiguity, the failure a semantic layer exists to kill (b5).</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="" data-on=""></div>
+
+    <div class="callout tip">
+      <strong>Check it against real SQL</strong>
+      Don't take the verdict's word for it. Here is a live SQL editor on the same database - run the gold revenue query yourself and compare with what the naive model produced for Q4.
+    </div>
+    <div class="sqlbox" data-caption="Gold Q4: revenue = delivered orders only. Delete the WHERE line and re-run to reproduce the model's silent mistake by hand.">
+      <pre class="sql-src">SELECT ROUND(SUM(oi.quantity * oi.unit_price), 2) AS revenue
+FROM order_items oi
+JOIN orders o ON o.order_id = oi.order_id
+WHERE o.status = 'delivered';</pre>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Your baseline number <span class="tag demo">★ 8 min · run the golden set</span></h2>
+    </div>
+    <p class="lede">Now measure instead of eyeballing. Run all 12 golden questions through the naive system and get your execution-accuracy baseline. Write the number down - the next nine sessions exist to move it, one lever at a time.</p>
+
+    <div class="t2s" data-mode="scorecard" data-levers="" data-on=""></div>
+
+    <div class="callout win">
+      <strong>★ The number to remember</strong>
+      Around 8% - one question in twelve. That is what "just point an LLM at the schema" honestly delivers on questions with any business meaning, and it rhymes with the published range (~3% on Vanna's benchmark, ~10% in enterprise case studies, near 0% on the BEAVER enterprise benchmark). Nobody's demo shows you this number. Yours just did.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 20-30 min total</span></h2>
+    </div>
+    <ul>
+      <li>Ask all 12 golden questions in the Demo 1 playground. For each failure, decide before reading the "Why": loud or silent?</li>
+      <li>Sort the 12 into three buckets: needs the right columns (schema), needs a query pattern (examples), needs a business definition (semantics). You have just predicted sessions b2-b5.</li>
+      <li>Write 5 golden questions for a database you know at work - and note which words in them appear nowhere in that schema. Those words are your future silent failures.</li>
+      <li>Reproduce Q4's silent failure by hand in the live SQL editor (delete the WHERE), then break the gold query louder: misspell a column and read SQLite's error message - that message is the raw material of b6's self-correction loop.</li>
+      <li>Optional reading: skim "A Survey of Text-to-SQL in the Era of LLMs" (arXiv 2408.05109) sections 1-2 - the pipeline picture will look familiar now.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into runnable sessions; papers and leaderboards stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">A Survey of Text-to-SQL in the Era of LLMs (arXiv 2408.05109)</span><span class="note">Part 1 · the pipeline framing; full technique map unfolds across b2-b7</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Spider 2.0 (ICLR 2025) headline results</span><span class="note">Part 1 · the 86% → 10% cliff; leaderboard story completes in b10</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Vanna accuracy research (context strategy ladder)</span><span class="note">Part 2 · the 3% → 80% ladder this track climbs; framework itself in b9</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">BIRD benchmark (NeurIPS 2023) - execution accuracy metric</span><span class="note">Part 3 · EX defined; benchmark depth and its 52.8% annotation-error scandal in b8</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Frontier models score ~86% on Spider but ~10% on Spider 2.0. What changed?</p>
+      <button class="qopt" type="button">A · Spider 2.0 uses trick questions designed to fool models</button>
+      <button class="qopt" type="button">B · The models tested were older and smaller</button>
+      <button class="qopt" type="button">C · The databases became enterprise-real - huge cryptic schemas whose business meaning no schema dump carries</button>
+      <p class="qwhy">Same models, real databases: 1,000+ columns, 100+ line answers, business meaning that lives outside the schema. The cliff is a context problem, which is why every fix in this track is a context lever.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Which failure is more dangerous in production, and why?</p>
+      <button class="qopt" type="button">A · Silent - the SQL runs and returns a plausible wrong number nobody questions</button>
+      <button class="qopt" type="button">B · Loud - errors block users and erode trust fastest</button>
+      <button class="qopt" type="button">C · They are equally bad since both are wrong</button>
+      <p class="qwhy">A loud failure announces itself and can be caught and retried by an agent. A silent one ships a wrong number into a real decision. Q4's cancelled-orders revenue is exactly this shape.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · What is execution accuracy (EX)?</p>
+      <button class="qopt" type="button">A · The share of generated queries that run without a database error</button>
+      <button class="qopt" type="button">B · The share of questions where the generated SQL's result set matches the gold query's result set</button>
+      <button class="qopt" type="button">C · The share of generated SQL strings that exactly match the gold SQL text</button>
+      <p class="qwhy">EX compares results, not strings - differently written SQL that returns the same rows is correct. Merely running without error is not enough: silent failures run fine and are still wrong.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 1 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The pipeline</b><span>question → context assembly → LLM writes SQL → execute → answer. Every product is this.</span></div>
+      <div class="cheat-item"><b>The thesis</b><span>The model is not the product - context is. All nine remaining sessions are context levers.</span></div>
+      <div class="cheat-item"><b>The cliff</b><span>Spider ~86% → Spider 2.0 ~10% for the same models. Demos live on the left side, your company on the right.</span></div>
+      <div class="cheat-item"><b>Loud failure</b><span>Database error (hallucinated column/table, dialect slip). Honest; an agent can retry it (b6).</span></div>
+      <div class="cheat-item"><b>Silent failure</b><span>Runs fine, wrong answer (wrong metric, join, filter). The one that ships. Schema mistakes drive 80%+ of failures.</span></div>
+      <div class="cheat-item"><b>Golden set</b><span>Real questions + human-verified SQL. Compare result sets = execution accuracy (EX), the only number that matters.</span></div>
+      <div class="cheat-item"><b>Baseline</b><span>Schema-dump prompting: ~8% here, ~3-10% in published measurements. Write yours down.</span></div>
+      <div class="cheat-item"><b>Running project</b><span>DaybreakGPT at rung 0. Next: b2 schema linking - stop the hallucinated columns first.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 1 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="b2-schema-linking.html">Next: Schema linking →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

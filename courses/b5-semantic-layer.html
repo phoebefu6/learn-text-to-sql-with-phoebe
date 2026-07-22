@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 5 · The semantic layer - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 5 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 5 of 10</div>
+    <h1>The semantic layer: <span class="accent">teach it what the words mean</span></h1>
+    <p class="sub">DaybreakGPT is stuck at 58% - and every remaining miss runs perfectly. Wrong revenue, wrong churn, wrong "best channel", all delivered with a straight face. Tonight you add the rung with the strongest evidence in the whole field: a small written contract of what your metrics actually mean. It is the biggest single jump this track makes - 58% to 92% - and it kills the failures nothing else can see.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">The payoff session</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap: the 58% wall</span>
+      <span class="a2" style="flex:4">3-18 · Meaning &amp; the evidence</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: the 92% jump</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where we are on the ladder</h2>
+    </div>
+    <p class="lede">The scoreboard so far: naive baseline 8% (b1) → schema linking 25% (b2) → few-shot examples 42% (b3) → RAG over metadata 58% (b4). Notice what the remaining failures have in common: <strong>every one of them executes without complaint</strong>. The model knows the tables, has seen query patterns, can retrieve docs - and still sums cancelled orders into revenue, because nobody ever wrote down that revenue means delivered orders only. Tonight's lever is that writing-down. It moves the bar further than any other single rung: <strong>58% → 92%</strong>.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The silent-failure autopsy (why Q4, Q9, Q10 and Q11 all pass unnoticed), the strongest measured evidence in the field (+17 to +23 points from one 4KB document, and a benchmark where the semantic layer scores 98-100%), the loud-vs-silent failure-mode argument for why this design is safer, and a working metric contract for Daybreak that lifts DaybreakGPT to 11/12.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail</strong>
+      The "model" in tonight's playgrounds is the same deterministic teaching simulation as always: each golden question carries the characteristic mistake real LLMs make when a context lever is missing. The SQL it writes genuinely executes against a real SQLite Daybreak in your browser - right and wrong are decided by execution, not by us.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE PROBLEM ============ -->
+  <section class="section" id="meaning">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · the failure family levers b2-b4 cannot touch</span>
+      <h2>Business meaning is not in the schema <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Look at Daybreak's schema as hard as you like: nothing in it says what revenue is. <code>orders.status</code> exists; the rule "revenue counts delivered orders only" does not. That rule lives in your head, your finance team's head, maybe a wiki - everywhere except the one place the model reads. A <strong>semantic layer</strong> is that rule, written down as a machine-readable contract: metric definitions, mandatory filters, blessed join paths, vocabulary rulings.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schema on the left, semantic definitions layer in the middle, correct SQL on the right">
+        <style>
+          .b5aT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b5aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .b5aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b5aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b5aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b5aArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b5ah1); }
+        </style>
+        <defs>
+          <marker id="b5ah1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b5aH" x="30" y="36">The missing middle box - where the meaning lives</text>
+        <rect x="30" y="60" width="240" height="118" rx="10" fill="#003B57"/>
+        <text class="b5aT" x="46" y="86">Schema - what exists</text>
+        <text class="b5aS" x="46" y="110">orders.status TEXT</text>
+        <text class="b5aS" x="46" y="128">order_items.unit_price</text>
+        <text class="b5aS" x="46" y="146">subscriptions.cancel_date</text>
+        <rect x="320" y="60" width="240" height="118" rx="10" fill="#7C3AED"/>
+        <text class="b5aT" x="336" y="86">Semantic layer - meaning</text>
+        <text class="b5aS" x="336" y="110">revenue = delivered only</text>
+        <text class="b5aS" x="336" y="128">churn = subs cancelled</text>
+        <text class="b5aS" x="336" y="146">"best" = rank by revenue</text>
+        <rect x="620" y="60" width="230" height="118" rx="10" fill="#0F80CC"/>
+        <text class="b5aT" x="636" y="86">SQL you actually meant</text>
+        <text class="b5aS" x="636" y="110">JOIN orders o ...</text>
+        <text class="b5aS" x="636" y="128">WHERE o.status =</text>
+        <text class="b5aS" x="636" y="146">  'delivered'</text>
+        <path class="b5aArr" d="M270,119 L318,119"/>
+        <path class="b5aArr" d="M560,119 L618,119"/>
+        <text class="b5aX" x="30" y="216">Skip the middle box and the model still writes SQL that runs - it just answers a different question.</text>
+        <rect x="30" y="240" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b5aN" x="54" y="252">The middle box can be a 4KB text file. It is the single biggest measured accuracy lever in the field.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - schema tells the model what exists; the semantic layer tells it what the words mean</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Four silent failures hiding in plain sight<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every question DaybreakGPT still misses at 58% is a meaning problem, and every one executes cleanly:</p>
+        <table class="clean">
+          <thead><tr><th>Question</th><th>What the model does</th><th>The missing ruling</th></tr></thead>
+          <tbody>
+            <tr><td>Q4 · total revenue</td><td>Sums every order line - cancelled and pending included</td><td>Revenue = delivered orders only</td></tr>
+            <tr><td>Q10 · revenue per customer</td><td>Correct joins, correct math - forgets the delivered filter</td><td>Same metric rule, applied everywhere</td></tr>
+            <tr><td>Q9 · March churn</td><td>Counts cancelled ORDERS in March</td><td>Churn = cancelled SUBSCRIPTIONS, a different table</td></tr>
+            <tr><td>Q11 · best channel</td><td>Ranks channels by order count</td><td>"Best" means most revenue, not most orders</td></tr>
+          </tbody>
+        </table>
+        <p>Not one raises an error. Not one looks wrong in a result grid. Each would sail into a dashboard, a board slide, a decision. This is the failure family we named in b1 - <strong>silent</strong> - and levers b2-b4 cannot touch it, because tables, examples and docs about columns all answer "how do I query this?", never "what did the business mean by that word?".</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why RAG docs (b4) did not already fix this<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>b4's retrieved docs handled <em>vocabulary about columns</em>: "active means cancel_date IS NULL", "dates are TEXT, roll up with strftime". Those are facts about the data. Metric rules are different beasts - they are <em>policy</em>: cross-table, mandatory, owned by the business, and dangerous to leave to retrieval luck. A semantic layer promotes them from "notes the retriever might surface" to "contract the system always honors". Rough boundary that serves well in practice: if getting it wrong changes a number an executive sees, it belongs in the semantic layer; if it just helps the model write tidier SQL, docs are fine.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE EVIDENCE ============ -->
+  <section class="section" id="evidence">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers arXiv 2604.25149, dbt-labs/dbt-llm-sl-bench</span>
+      <h2>The evidence: strongest in the field <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Plenty of text-to-SQL claims are vendor smoke. This rung is the exception: it has a published paired benchmark, an open-source vendor benchmark you can re-run yourself, and an independent ontology result - all pointing the same direction.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart: paired benchmark 45-50 percent to 67-69 percent with a semantic doc; dbt benchmark 84-90 raw versus 98-100 through the semantic layer">
+        <style>
+          .b5bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b5bL { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b5bG { font: 600 12px Inter, sans-serif; fill: #526472; }
+          .b5bV { font: 700 12px Inter, sans-serif; fill: #FFFFFF; }
+          .b5bD { font: 700 12px Inter, sans-serif; fill: #10222E; }
+          .b5bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b5bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="b5bH" x="30" y="32">Two independent benchmarks, one shape</text>
+        <text class="b5bG" x="30" y="62">Paired benchmark, 3 frontier models (arXiv 2604.25149):</text>
+        <text class="b5bL" x="30" y="90">Schema only</text>
+        <rect x="240" y="74" width="273" height="24" rx="4" fill="#9FCFEE"/>
+        <text class="b5bD" x="250" y="91">45-50%</text>
+        <text class="b5bL" x="30" y="128">+ one 4KB semantic doc</text>
+        <rect x="240" y="112" width="394" height="24" rx="4" fill="#7C3AED"/>
+        <text class="b5bV" x="250" y="129">67-69% · a +17 to +23 point jump</text>
+        <text class="b5bG" x="30" y="172">dbt's 2026 benchmark (vendor-run, open source):</text>
+        <text class="b5bL" x="30" y="200">Raw text-to-SQL</text>
+        <rect x="240" y="184" width="505" height="24" rx="4" fill="#3DA0E3"/>
+        <text class="b5bV" x="250" y="201">84-90%</text>
+        <text class="b5bL" x="30" y="238">Through the semantic layer</text>
+        <rect x="240" y="222" width="574" height="24" rx="4" fill="#7C3AED"/>
+        <text class="b5bV" x="250" y="239">98-100% · in-scope questions: 100%</text>
+        <text class="b5bX" x="30" y="278">Same shape at both ends of the difficulty scale: write the meaning down, the number jumps.</text>
+        <rect x="30" y="298" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b5bN" x="54" y="310">The catch: someone has to write the layer. That someone is you - the leader track calls it the curation tax.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the semantic-layer evidence: a paired academic benchmark and dbt's own open-source benchmark</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Reading the three results honestly<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>The paired benchmark (published, arXiv 2604.25149).</strong> Three frontier models, same questions, with and without a 4KB semantic document. Every model jumped <strong>+17 to +23 percentage points</strong> (from 45-50% to 67-69%). One small file moved the needle more than a model-generation upgrade typically does.</li>
+          <li><strong>dbt's benchmark (dbt-labs/dbt-llm-sl-bench - vendor-run, but open source and re-runnable).</strong> Raw text-to-SQL scored 84-90%; routing through the semantic layer scored 98-100%, and <strong>100% on in-scope questions</strong>. Treat the exact numbers as dbt's claim on dbt's benchmark - but the repo is public, which is more than most vendors offer.</li>
+          <li><strong>dbt's sharper point is about failure modes, not points.</strong> Raw text-to-SQL fails <strong>silently</strong> - a plausible wrong number. A semantic layer fails <strong>loudly</strong> - an out-of-scope question returns an error, not a guess. Loud is safer: an error costs you a retry; a silent wrong number costs you a decision.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The ontology stack, cranked to eleven.</strong> One reported enterprise experiment (a blog-published result - hold it loosely) put GPT-4 on a 199-table insurance schema: raw text-to-SQL managed <strong>16.7%</strong>. Rebuilding the target as an OWL ontology - a formal semantic layer - lifted it to <strong>54.2%</strong>, and adding ontology-based query checking pushed toward <strong>72%</strong>. Same model throughout. The uglier the schema, the more the meaning layer pays.</p>
+        </div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why loud-by-design is the safer architecture<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A semantic layer narrows what the system will attempt: questions map to defined metrics and dimensions, or they fail with "I don't have a definition for that". That refusal feels like a limitation in a demo and is a gift in production - it converts the invisible failure family (silent wrong numbers) into the visible one (errors you can log, count, and fix by adding a definition). You are not making the system smarter; you are making its ignorance honest. Keep this trade in mind for b8, where you will measure refusal and wrong-answer rates separately.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: IN PRACTICE ============ -->
+  <section class="section" id="practice">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers WrenAI MDL, dbt SL, Cortex Analyst YAML, Genie instructions</span>
+      <h2>What a semantic layer looks like in practice <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">Every serious product in this market ships the same idea in a different file format. Recognize the shape once and you can read all of them:</p>
+    <table class="clean">
+      <thead><tr><th>Product</th><th>The contract's shape</th><th>Flavor</th></tr></thead>
+      <tbody>
+        <tr><td>WrenAI</td><td>MDL - a JSON modeling definition language of business concepts, joins and metrics</td><td>Semantic-layer-first open source</td></tr>
+        <tr><td>dbt Semantic Layer</td><td>Metrics defined once in dbt, queried by name instead of re-derived</td><td>Lives where your transforms live</td></tr>
+        <tr><td>Snowflake Cortex Analyst</td><td>A YAML semantic model - practitioners' verdict: "the magic is in the YAML"</td><td>Warehouse-native</td></tr>
+        <tr><td>Databricks Genie</td><td>Curated rooms: plain-text curator instructions + example SQL + benchmarks</td><td>Curation-as-product</td></tr>
+      </tbody>
+    </table>
+
+    <p class="lede">Here is DaybreakGPT's whole semantic layer - the document that buys tonight's 34 points. Read every line; each one is a Q4/Q9/Q10/Q11 ruling you met in Part 1:</p>
+    <div class="prompt-box">
+      <span class="label">daybreak-semantics.yaml - the metric contract the model reads</span>
+metrics:
+  - name: revenue
+    definition: SUM(order_items.quantity * order_items.unit_price)
+    required_filter: orders.status = 'delivered'
+    note: Cancelled and pending orders NEVER count as revenue.
+
+  - name: churned_subscriptions
+    definition: COUNT(subscriptions) with cancel_date in the period
+    note: Churn is about SUBSCRIPTIONS. A cancelled order is not churn.
+
+rulings:
+  - phrase: "best channel" / "top channel"
+    means: rank channels by revenue (see metric above), not order count
+
+joins:
+  - revenue questions join orders to order_items on order_id;
+    there is no total or amount column on orders
+    </div>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Writing your own: three rules of thumb<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Start from arguments, not tables.</strong> Every metric two humans have ever disputed in a meeting ("is that gross or net?") goes in first. If nobody disputes it, it can wait.</li>
+          <li><strong>One definition, one owner, one place.</strong> The moment revenue is defined in two files, you have rebuilt the problem you were solving.</li>
+          <li><strong>Small is fine - small is the point.</strong> The paired benchmark's document was 4KB. Ours is under 30 lines. Coverage of the disputed core beats encyclopedic sprawl you cannot maintain.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Predict, then flip the switch <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">The playground below starts at b4's configuration: schema linking, examples and RAG on, semantic layer off. The four questions loaded are exactly the silent-failure family. Before you touch the new lever, make your predictions - that is the skill this session is really teaching.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>Predict first.</strong> For each of Q4, Q9, Q10, Q11, write down what wrong answer you expect with the semantic layer off - which filter is missing, which table is wrong, which metric got swapped. Part 1's table is your cheat sheet; no peeking until you have committed.</p></div>
+      <div class="step"><p>Ask all four with semantic <strong>off</strong>. Every one returns rows and a "plausible but WRONG" verdict - four silent failures in a row. Score your predictions.</p></div>
+      <div class="step"><p>Toggle <strong>Semantic layer on</strong> and re-ask all four. Watch each flip to "matches the gold answer". Same model, same schema, same docs - one small contract changed.</p></div>
+      <div class="step"><p>Toggle it back off for Q10 and diff the two SQLs: the only change is <code>WHERE o.status = 'delivered'</code>. Thirty-four points of accuracy hanging on one line nobody had written down.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="schema,examples,rag,semantic" data-on="schema,examples,rag" data-q="4,9,10,11"></div>
+
+    <div class="callout tip">
+      <strong>Verify one by hand</strong>
+      Never trust a verdict you have not reproduced. Run the gold churn query below, then change <code>subscriptions</code>/<code>cancel_date</code> to <code>orders</code>/<code>order_date</code> with <code>status = 'cancelled'</code> and re-run - you will manufacture Q9's silent failure yourself and see the two different numbers side by side.
+    </div>
+    <div class="sqlbox" data-caption="Gold Q9: churn counts cancelled SUBSCRIPTIONS. Rebuild the model's cancelled-orders mistake by hand and compare counts.">
+      <pre class="sql-src">SELECT COUNT(*) AS churned FROM subscriptions
+WHERE cancel_date >= '2026-03-01' AND cancel_date < '2026-04-01';</pre>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Re-run the golden set: the payoff <span class="tag demo">★ 8 min · run the scorecard</span></h2>
+    </div>
+    <p class="lede">Four levers on. Run the full golden set and watch the bar make its biggest move of the track: 7/12 becomes <strong>11/12 - 92%</strong>.</p>
+
+    <div class="t2s" data-mode="scorecard" data-levers="schema,examples,rag,semantic" data-on="schema,examples,rag,semantic"></div>
+
+    <div class="callout win">
+      <strong>★ The number to remember</strong>
+      58% → 92% - a 34-point jump from a document smaller than this page. It rhymes with the published evidence: +17-23 points measured across three frontier models, 98-100% on dbt's own benchmark. No other single rung on this ladder comes close.
+    </div>
+    <div class="callout tip">
+      <strong>And the one that still fails - listen to HOW it fails</strong>
+      Q12 misses, but differently: the scorecard marks it <strong>✗ error</strong>, not ✗ silent. The model wrote <code>DATEDIFF</code> - T-SQL, not SQLite - and the database refused loudly. A loud failure is a failure with a gift attached: an error message a machine can react to. Catching that gift is session b6.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 25-35 min total</span></h2>
+    </div>
+    <ul>
+      <li>Run the full 12 in the Demo 1 playground config (semantic off), and sort every failure into loud vs silent before reading the verdicts. You should find that ALL the remaining misses at 58% are silent - that is why this rung had to exist.</li>
+      <li>Write a daybreak-semantics.yaml ruling for a metric we did NOT cover: define "average order value" (Q6) precisely enough that the line-item-average mistake from b3 becomes impossible. Compare with the gold SQL's group-then-average shape.</li>
+      <li>For a database you know at work, write the three-metric starter contract: your org's "revenue", your org's "churn", and one phrase people say in meetings ("best", "active", "top") with its official ranking rule. Under 30 lines.</li>
+      <li>Reproduce Q9 by hand in the live SQL editor per the Demo 1 tip, and note how far apart the two numbers are - that gap is what would have shipped to a dashboard.</li>
+      <li>Optional reading: skim the dbt-labs/dbt-llm-sl-bench README and the abstract of arXiv 2604.25149 - note that one is a vendor's own benchmark and one is a paired academic study, and practice saying which you would cite to a skeptical CFO.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into runnable sessions; papers and repos stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">dbt-labs/dbt-llm-sl-bench (open-source semantic-layer benchmark)</span><span class="note">Part 2 · 84-90% raw vs 98-100% through the layer; silent-vs-loud framing - vendor-run, re-runnable</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Semantic-layer paired benchmark (arXiv 2604.25149)</span><span class="note">Part 2 · +17-23pp across three frontier models from a 4KB semantic document</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">WrenAI MDL + Snowflake Cortex Analyst YAML</span><span class="note">Part 3 · the contract's real-world file formats; full framework tour in b9, vendor landscape in a3-a4</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · dbt argues a semantic layer is safer than raw text-to-SQL even before counting accuracy points. Why?</p>
+      <button class="qopt" type="button">A · It runs faster because metric SQL is precompiled</button>
+      <button class="qopt" type="button">B · It changes the failure mode: out-of-scope questions fail loudly with an error instead of silently with a plausible wrong number</button>
+      <button class="qopt" type="button">C · It removes the LLM from the pipeline entirely</button>
+      <p class="qwhy">Raw text-to-SQL guesses when it should refuse - and its wrong guesses run fine. A semantic layer refuses what it has no definition for. Loud costs a retry; silent costs a decision.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · Which of these belongs in the semantic layer, rather than in RAG-retrieved docs (b4)?</p>
+      <button class="qopt" type="button">A · "Dates are stored as TEXT; use strftime for monthly rollups"</button>
+      <button class="qopt" type="button">B · "The subscriptions table has a monthly_qty column"</button>
+      <button class="qopt" type="button">C · "Revenue counts delivered orders only - cancelled and pending never count"</button>
+      <p class="qwhy">A and B are facts about the data - docs and schema territory. C is a business policy that changes a number executives see: a metric definition with a mandatory filter. Policy goes in the contract, not in retrieval luck.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · What did the paired benchmark (arXiv 2604.25149) measure when a 4KB semantic document was added?</p>
+      <button class="qopt" type="button">A · +17 to +23 percentage points, consistently across all three frontier models tested</button>
+      <button class="qopt" type="button">B · +2 to +3 points - marginal, only worthwhile at enterprise scale</button>
+      <button class="qopt" type="button">C · Gains for the weakest model only; frontier models already knew the metrics</button>
+      <p class="qwhy">45-50% → 67-69% for every model in the pair - the consistency across models is the point. The knowledge was missing from the context, not from the models' IQ, which is this track's thesis in one result.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 5 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The rung</b><span>Semantic layer: metric definitions, mandatory filters, join rulings - written down where the model reads.</span></div>
+      <div class="cheat-item"><b>The jump</b><span>58% → 92% (7/12 → 11/12). Biggest single move on the ladder - published analog: +17-23pp from one 4KB doc.</span></div>
+      <div class="cheat-item"><b>What it kills</b><span>Silent failures: revenue with cancelled orders (Q4/Q10), orders-as-churn (Q9), count-as-"best" (Q11).</span></div>
+      <div class="cheat-item"><b>Loud vs silent</b><span>dbt's framing: text-to-SQL fails silently, a semantic layer fails loudly. Loud is safer - errors are catchable.</span></div>
+      <div class="cheat-item"><b>Layer vs docs</b><span>Docs (b4) = facts about the data. Semantic layer = business policy that changes reported numbers.</span></div>
+      <div class="cheat-item"><b>Real formats</b><span>WrenAI MDL (JSON) · dbt SL metrics · Cortex Analyst YAML ("the magic is in the YAML") · Genie curator instructions.</span></div>
+      <div class="cheat-item"><b>The tax</b><span>Somebody writes and owns the contract - the curation tax (leader track a4). Start from disputed metrics, stay small.</span></div>
+      <div class="cheat-item"><b>Still failing</b><span>Q12 - but LOUDLY (DATEDIFF dialect slip → database error). Next: b6 self-correction catches exactly those.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 5 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b4-rag-over-metadata.html">← Prev: RAG over metadata</a> &nbsp;·&nbsp; <a href="../index.html">All sessions</a> &nbsp;·&nbsp; <a href="b6-self-correction.html">Next: Self-correction →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

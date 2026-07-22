@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 9 · The framework tour - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 9 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 9 of 10</div>
+    <h1>The framework tour: <span class="accent">you already built all of these</span></h1>
+    <p class="sub">Sessions b1-b7 built every accuracy lever by hand. Tonight you discover the punchline: the real open-source frameworks are those same levers with a logo. Vanna is b4's RAG-over-metadata. WrenAI is b5's semantic layer grown into a platform. The LangChain agent is b6's loop. SQLCoder is the road we deliberately did not take. You leave with a which-tool-when map - and a market lesson, because the most-starred framework in the space just went commercial.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">After b8 evaluation</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · The four axes &amp; the field</span>
+      <span class="a3" style="flex:5">18-40 · Mapping + which-when workshop</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why tour frameworks after building by hand</h2>
+    </div>
+    <p class="lede">Because now you can read them. A framework tour before b1 would have been a features shopping trip; after b7 it is recognition - every README maps onto a lever you built and measured. That is the deepest reason this track built DaybreakGPT from scratch: <strong>frameworks are congealed context engineering</strong>, and you now know exactly which context each one congeals.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The four architecture axes every text-to-SQL tool sits on (RAG-retrieval vs semantic-layer-first vs fine-tuned model vs DIY agent), a five-framework comparison you can defend in a design review, the Vanna-went-commercial market lesson, and a which-when decision rule for three real org shapes.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail</strong>
+      The playground on this page still runs the deterministic simulated model over real in-browser SQLite - built for teaching, each missing lever produces the characteristic real-LLM failure. The frameworks toured here run real LLMs and are correspondingly noisier; their architecture, not their temperature, is tonight's subject.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE FOUR AXES ============ -->
+  <section class="section" id="axes">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the OSS framework field, repo-verified facts</span>
+      <h2>The four architecture axes <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Strip the branding and every open-source text-to-SQL project bets on one primary answer to "where does accuracy come from?" - <strong>retrieval</strong> (fetch the right context per question), a <strong>semantic contract</strong> (write the business meaning down once), <strong>model weights</strong> (fine-tune SQL into the model itself), or an <strong>agent loop</strong> (execute, observe, retry). Four axes; you have built three of them.</p>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Five projects, one comparison table<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Project</th><th>Stars</th><th>License</th><th>Thesis</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Vanna</strong> (vanna-ai/vanna)</td><td>23.8k</td><td>MIT</td><td>RAG-over-metadata: train on DDL + docs + question-SQL pairs, retrieve per question; v2.0 added a production agent framework with identity flow + row-level security</td><td>Archived Mar 29, 2026 (read-only); pivoted to commercial Vanna Cloud; community forks carry on</td></tr>
+            <tr><td><strong>WrenAI</strong></td><td>~12k</td><td>OSS</td><td>Semantic-layer-first: MDL, a JSON modeling definition language for business concepts, joins, metrics; full GenBI platform with RBAC, RLS, column-level permissions, 20+ connectors</td><td>Active</td></tr>
+            <tr><td><strong>DB-GPT</strong></td><td>Large</td><td>OSS</td><td>Full LLM+DB stack: AWEL declarative DAG workflow engine, SMMF management for 50+ local LLMs; QLoRA CodeLlama-13B hit 82.5% Spider EX (vendor-reported)</td><td>Active</td></tr>
+            <tr><td><strong>defog/sqlcoder</strong></td><td>-</td><td>Apache-2 code, CC BY-SA weights</td><td>Fine-tuned open-weights model family (7B to 70B on HuggingFace), trained on 20k+ curated pairs; claimed to beat GPT-4 - but only on their own sql-eval, not Spider or BIRD</td><td>Dormant (Defog pivoted)</td></tr>
+            <tr><td><strong>langchain-ai/text-to-sql-agent</strong></td><td>24</td><td>OSS</td><td>Official reference agent: discover tables → inspect schema → generate → validate → execute → retry on error; Chinook demo DB</td><td>Tutorial-scale reference, not a framework</td></tr>
+          </tbody>
+        </table>
+        <p>Read the stars column with tonight's date in mind: counts and statuses move fast in this space. The live ranking is always at <strong>github.com/topics/text-to-sql</strong> - check it before quoting any of these numbers in a design doc.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The Vanna lesson: the most-starred project went commercial<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>This one is verified, not vendor spin: on <strong>March 29, 2026</strong>, vanna-ai/vanna - the most-starred open-source text-to-SQL framework, 23.8k stars, MIT license - was archived and made read-only. Last release: v2.0.2 on February 2, 2026. The team pivoted to the commercial Vanna Cloud; community forks (DataChat among them) carry the OSS torch.</p>
+        <ul>
+          <li><strong>Popularity is not permanence.</strong> Star count measures past enthusiasm, not future maintenance. An archived dependency still runs - but CVEs, dialect changes, and LLM API churn arrive with nobody home.</li>
+          <li><strong>The architecture outlives the repo.</strong> Vanna's train-on-DDL/docs/pairs pattern is b4 of this course; you can rebuild it in an afternoon or adopt a fork. Understanding beats depending.</li>
+          <li><strong>Plan the exit before the entrance.</strong> When you adopt any OSS framework here, write down what you would do if it archived tomorrow. For one of them, that already happened.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>Teams woke up on March 30 with an archived core dependency.</strong> Anyone who had wrapped Vanna as their production text-to-SQL layer got a choice: freeze on v2.0.2 forever, migrate to a community fork, pay for Vanna Cloud, or rebuild the pattern in-house. Teams that had treated Vanna as "the b4 pattern with a convenient API" - understanding the retrieval architecture underneath - migrated in days. Teams that had treated it as a magic box faced a re-evaluation project. That gap is exactly what this track's build-it-by-hand approach buys you.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE MAP ============ -->
+  <section class="section" id="map">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers axis map + session-to-framework mapping</span>
+      <h2>The map: axes, quadrants, and where you built each idea <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Two pictures. First, the field on two axes: where accuracy comes from (retrieved per question vs written down up front) against what you adopt (a component you embed vs a platform you deploy). Second, the mapping that makes this session easy: each framework's core idea is a session you already completed.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two-by-two quadrant map: context retrieved per question vs defined up front, component vs platform, with five frameworks placed">
+        <style>
+          .b9aT { font: 700 13.5px Inter, sans-serif; fill: #FFFFFF; }
+          .b9aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.92; }
+          .b9aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b9aA { font: 600 12.5px Inter, sans-serif; fill: #526472; }
+          .b9aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b9aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b9aAx { stroke: #AEC4D2; stroke-width: 2; fill: none; marker-end: url(#b9ah); }
+        </style>
+        <defs>
+          <marker id="b9ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b9aH" x="30" y="30">Where does accuracy come from - and what do you adopt?</text>
+        <path class="b9aAx" d="M440,330 L440,60"/>
+        <path class="b9aAx" d="M120,195 L800,195"/>
+        <text class="b9aA" x="352" y="52">Platform you deploy</text>
+        <text class="b9aA" x="340" y="348">Component you embed</text>
+        <text class="b9aA" x="120" y="184">← Context retrieved per question</text>
+        <text class="b9aA" x="580" y="184">Meaning fixed up front →</text>
+        <rect x="160" y="80" width="200" height="66" rx="10" fill="#0F80CC"/>
+        <text class="b9aT" x="174" y="104">DB-GPT</text>
+        <text class="b9aS" x="174" y="122">AWEL workflows, SMMF</text>
+        <text class="b9aS" x="174" y="138">50+ local LLMs · platform</text>
+        <rect x="520" y="80" width="210" height="66" rx="10" fill="#003B57"/>
+        <text class="b9aT" x="534" y="104">WrenAI</text>
+        <text class="b9aS" x="534" y="122">MDL semantic layer, GenBI</text>
+        <text class="b9aS" x="534" y="138">RBAC/RLS · platform</text>
+        <rect x="160" y="230" width="200" height="66" rx="10" fill="#3DA0E3"/>
+        <text class="b9aT" x="174" y="254">Vanna (archived)</text>
+        <text class="b9aS" x="174" y="272">RAG over DDL + docs +</text>
+        <text class="b9aS" x="174" y="288">question-SQL pairs</text>
+        <rect x="520" y="230" width="210" height="66" rx="10" fill="#9FCFEE"/>
+        <text class="b9aT" x="534" y="254" style="fill:#10222E">SQLCoder (dormant)</text>
+        <text class="b9aS" x="534" y="272" style="fill:#10222E">meaning baked into the</text>
+        <text class="b9aS" x="534" y="288" style="fill:#10222E">fine-tuned weights</text>
+        <rect x="355" y="255" width="170" height="60" rx="10" fill="#7C3AED"/>
+        <text class="b9aT" x="369" y="279">LangChain agent</text>
+        <text class="b9aS" x="369" y="297">DIY loop · 24-star ref</text>
+        <text class="b9aX" x="30" y="368">The center is honest: the agent loop is orthogonal - any quadrant can add execute-and-retry (your b6).</text>
+        <rect x="30" y="380" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b9aN" x="54" y="392">Both dormant projects sit on the right and bottom - the market rewards platforms and living context.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the field on two axes; violet marks the agentic loop, the AI-mechanism piece</figcaption>
+    </figure>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mapping from course sessions b4, b5, b6 and the untaken fine-tune road to Vanna, WrenAI, LangChain agent, SQLCoder">
+        <style>
+          .b9bT { font: 700 13.5px Inter, sans-serif; fill: #FFFFFF; }
+          .b9bS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.92; }
+          .b9bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b9bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b9bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b9bArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b9bh); }
+        </style>
+        <defs>
+          <marker id="b9bh" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b9bH" x="30" y="30">You already built their core idea - session on the left, framework on the right</text>
+        <rect x="30" y="55" width="290" height="52" rx="10" fill="#3DA0E3"/>
+        <text class="b9bT" x="44" y="77">b4 · RAG over metadata</text>
+        <text class="b9bS" x="44" y="95">retrieve DDL/docs/pairs per question</text>
+        <rect x="560" y="55" width="290" height="52" rx="10" fill="#003B57"/>
+        <text class="b9bT" x="574" y="77">Vanna</text>
+        <text class="b9bS" x="574" y="95">train() on DDL + docs + question-SQL pairs</text>
+        <path class="b9bArr" d="M320,81 L556,81"/>
+        <rect x="30" y="120" width="290" height="52" rx="10" fill="#0F80CC"/>
+        <text class="b9bT" x="44" y="142">b5 · The semantic layer</text>
+        <text class="b9bS" x="44" y="160">metric + join definitions as a contract</text>
+        <rect x="560" y="120" width="290" height="52" rx="10" fill="#003B57"/>
+        <text class="b9bT" x="574" y="142">WrenAI</text>
+        <text class="b9bS" x="574" y="160">MDL JSON encodes concepts, joins, metrics</text>
+        <path class="b9bArr" d="M320,146 L556,146"/>
+        <rect x="30" y="185" width="290" height="52" rx="10" fill="#7C3AED"/>
+        <text class="b9bT" x="44" y="207">b6 · Self-correction loop</text>
+        <text class="b9bS" x="44" y="225">execute → catch error → regenerate</text>
+        <rect x="560" y="185" width="290" height="52" rx="10" fill="#003B57"/>
+        <text class="b9bT" x="574" y="207">LangChain text-to-sql-agent</text>
+        <text class="b9bS" x="574" y="225">inspect → generate → execute → retry</text>
+        <path class="b9bArr" d="M320,211 L556,211"/>
+        <rect x="30" y="250" width="290" height="52" rx="10" fill="#9FCFEE"/>
+        <text class="b9bT" x="44" y="272" style="fill:#10222E">The road not taken · fine-tuning</text>
+        <text class="b9bS" x="44" y="290" style="fill:#10222E">bake SQL skill into model weights</text>
+        <rect x="560" y="250" width="290" height="52" rx="10" fill="#003B57"/>
+        <text class="b9bT" x="574" y="272">defog/sqlcoder</text>
+        <text class="b9bS" x="574" y="290">7B-70B open weights, 20k+ curated pairs</text>
+        <path class="b9bArr" d="M320,276 L556,276" stroke-dasharray="5 4"/>
+        <rect x="30" y="314" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b9bN" x="54" y="326">Dashed arrow = pointer only: this course chose context levers over fine-tuning, on the evidence.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - each framework is a session you finished; violet marks the agentic idea</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>What the mapping buys you in practice<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>When you evaluate any tool in this space - including commercial ones from leader session a3 - ask "which lever is this, and what feeds it?" A vendor demo of "AI that understands your business" is either retrieving something (what? from where? how fresh?), reading a semantic contract (who writes it? who maintains it?), or relying on the raw model (b1 taught you that number). The four axes turn marketing pages into architecture diagrams. And DB-GPT's vendor-reported 82.5% Spider EX from a QLoRA-tuned CodeLlama-13B is a useful calibration: a fine-tuned 13B approaching frontier-model Spider scores - on the clean academic benchmark, which b8 taught you to discount for enterprise use.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: WHICH-WHEN ============ -->
+  <section class="section" id="whichwhen">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers build-vs-buy guidance, leader a3 bridge</span>
+      <h2>Which tool, when <span class="tag concept">6 min live</span></h2>
+    </div>
+    <p class="lede">The axes become a decision rule once you add the org. Four common shapes:</p>
+    <details class="card">
+      <summary><span class="mode live">Live</span>The four org shapes and their default answers<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Embedding chat-with-data into your product</strong> → a component library on the retrieval axis (the Vanna pattern - via a maintained fork, or rebuilt in-house per b4). You control the UX; the framework supplies context plumbing.</li>
+          <li><strong>Business-user self-serve with governance requirements</strong> → a semantic-layer platform (WrenAI-style: MDL contract plus RBAC, RLS, column-level permissions). Governance lives in the contract, not in prompt hope.</li>
+          <li><strong>Already on Databricks or Snowflake</strong> → the warehouse-native route first (Genie, Cortex Analyst - leader session a3 covers that landscape). Your data never leaves, permissions come free, and the curation tax is the same one you would pay anyway.</li>
+          <li><strong>Learning, prototyping, or a weekend proof</strong> → a DIY agent, exactly like this course: LangChain's reference flow (discover → inspect → generate → validate → execute → retry) is tutorial-scale on purpose, and everything transfers.</li>
+        </ul>
+        <p>The fine-tuning axis (SQLCoder) is the specialist answer: worth it when you have thousands of curated question-SQL pairs, hard latency or on-prem constraints, and evaluation discipline (b8) to prove it beats context levers on your data. Note its caveat honestly: SQLCoder's beat-GPT-4 claim held on Defog's own sql-eval, not on Spider or BIRD.</p>
+      </div>
+    </details>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Keeping the map fresh<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Star counts and statuses in this session were verified at build time and will drift. Bookmark <strong>github.com/topics/text-to-sql</strong> for the live ranking, and re-check the archived/active status of anything before adopting it - the Vanna story is the standing reminder. The axes themselves are stable: whatever appears next quarter will still be answering "retrieval, contract, weights, or loop?"</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>DaybreakGPT is Vanna - the mapping, live <span class="tag demo">★ 10 min · everyone follows</span></h2>
+    </div>
+    <p class="lede">Vanna's whole API is three train() calls that fill three retrieval collections. You built all three, by hand, with a golden set attached. Walk the mapping:</p>
+
+    <div class="prompt-box">
+      <span class="label">Vanna's training API - annotated with the session where you built each collection</span>
+# 1. DDL collection - the schema the retriever can pull per question
+vn.train(ddl="CREATE TABLE orders (order_id INTEGER PRIMARY KEY, ...)")
+#    = b2 schema linking: right tables and columns into context
+
+# 2. Documentation collection - business meaning in plain text
+vn.train(documentation="Revenue counts delivered orders only. Active
+subscription = cancel_date IS NULL.")
+#    = b4 retrieved docs + b5 semantic definitions
+
+# 3. Question-SQL pair collection - worked examples to retrieve
+vn.train(question="Top 3 products by units sold",
+         sql="SELECT p.name, SUM(oi.quantity) AS units FROM ...")
+#    = b3 few-shot examples, made retrievable per-question in b4
+    </div>
+
+    <div class="steps">
+      <div class="step"><p>Read call 1: the DDL collection is your b2 lever - schema linking. Vanna retrieves the relevant CREATE TABLE statements per question instead of dumping all of them.</p></div>
+      <div class="step"><p>Read call 2: the documentation collection is b4's retrieved docs carrying b5's semantic definitions - "revenue = delivered only" is literally the sentence that fixed your Q4.</p></div>
+      <div class="step"><p>Read call 3: the question-SQL pairs are b3's few-shot examples, upgraded to per-question retrieval in b4. Example quality beats quantity - same lesson.</p></div>
+      <div class="step"><p>The realization: you already built Vanna's architecture by hand - plus the evaluation harness (b8) its README does not give you. Frameworks are congealed context engineering.</p></div>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Free exploration + the design exercise <span class="tag demo">★ 12 min · you decide</span></h2>
+    </div>
+    <p class="lede">All five levers, no guardrails. Toggle any combination, ask any golden question, and think in axes: schema + examples + RAG is the Vanna quadrant; semantic is the WrenAI quadrant; self-correction is the agent loop any quadrant can add.</p>
+
+    <div class="t2s" data-mode="playground" data-levers="schema,examples,rag,semantic,selfcorrect" data-on=""></div>
+
+    <div class="callout tip">
+      <strong>The design exercise - argue it like a design review</strong>
+      For each scenario below, pick a primary axis, name the framework style you would start from, and defend it in two sentences. There is a defensible default for each - and a best answer only your constraints can pick.
+    </div>
+    <div class="steps">
+      <div class="step"><p><strong>SaaS startup</strong> embedding chat-with-data into its product. Consider: component vs platform, who owns UX, what happens if the dependency archives (you know one that did).</p></div>
+      <div class="step"><p><strong>Bank data team</strong> serving internal business users. Consider: RLS and column permissions, auditability, where the semantic contract lives, why "prompt hope" fails review.</p></div>
+      <div class="step"><p><strong>Solo analyst</strong> automating their own weekly questions. Consider: setup cost, the DIY agent path, whether a golden set of 10 questions is enough (b8 says how to know).</p></div>
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 25-35 min total</span></h2>
+    </div>
+    <ul>
+      <li>Write your three design-exercise answers down (two sentences each) and note which lever from this course each choice leans on - that page is a reusable design-review artifact.</li>
+      <li>Visit github.com/topics/text-to-sql and record today's top five by stars. Compare with this session's table - anything moved? Anything newly archived?</li>
+      <li>Skim the WrenAI MDL documentation and map three MDL fields onto your b5 semantic definitions - you will recognize every one.</li>
+      <li>Read the langchain-ai/text-to-sql-agent reference flow and label each step with its session number (discover/inspect = b2, generate = b1+b3, validate/execute/retry = b6).</li>
+      <li>For one framework you might actually adopt, write the exit plan: what you would do if it archived tomorrow. If you cannot write it, you do not understand the dependency yet.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into runnable sessions; repos and docs stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">vanna-ai/vanna repo - verified facts (stars, license, archive date, v2.0 RLS)</span><span class="note">Parts 1-2 + Demo 1 · the RAG-over-metadata pattern and the market lesson</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">WrenAI - MDL semantic layer, GenBI platform, governance features</span><span class="note">Parts 1-3 · the semantic-layer-first axis; the b5 idea at platform scale</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">DB-GPT (AWEL, SMMF) + defog/sqlcoder + langchain-ai/text-to-sql-agent</span><span class="note">Parts 1-2 · placed on the axes; DB-GPT's 82.5% Spider EX is vendor-reported</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">github.com/topics/text-to-sql - live star ranking</span><span class="note">Part 3 + homework · the freshness pointer; counts here drift by design</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · What is the market lesson of Vanna's March 2026 archiving?</p>
+      <button class="qopt" type="button">A · RAG-over-metadata turned out not to work in production</button>
+      <button class="qopt" type="button">B · MIT-licensed projects cannot be commercialized</button>
+      <button class="qopt" type="button">C · Even the most-starred OSS project in a space can go commercial and stop maintenance - adopt architectures you understand and write the exit plan up front</button>
+      <p class="qwhy">The architecture (train on DDL + docs + pairs, retrieve per question) remains sound - it is this course's b4. What changed is maintenance: archived, read-only, commercial pivot. Stars measure past enthusiasm, not future support; understanding the pattern is your insurance.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · A bank data team needs business-user self-serve with row-level security, column permissions, and auditable metric definitions. Which axis fits first?</p>
+      <button class="qopt" type="button">A · Semantic-layer-first platform (WrenAI-style MDL contract with RBAC/RLS) - or warehouse-native if already on Databricks/Snowflake</button>
+      <button class="qopt" type="button">B · A fine-tuned model, because banks need maximum accuracy</button>
+      <button class="qopt" type="button">C · A DIY LangChain agent, because banks need full control of the code</button>
+      <p class="qwhy">Governance requirements live naturally in a semantic contract plus platform permissions - written down, reviewable, enforced. Fine-tuning bakes knowledge into weights nobody can audit, and a bare DIY agent leaves RLS as an exercise. Warehouse-native tools (a3) are the same answer bought instead of built.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · What is the honest caveat on SQLCoder's "beats GPT-4" claim?</p>
+      <button class="qopt" type="button">A · It only beat GPT-4 at 70B size, which nobody can run</button>
+      <button class="qopt" type="button">B · The claim held on Defog's own sql-eval benchmark, not on Spider or BIRD - and b8 taught you exactly how much weight vendor-chosen benchmarks deserve</button>
+      <button class="qopt" type="button">C · The weights are closed-source so the claim cannot be checked</button>
+      <p class="qwhy">The weights are open (7B-70B on HuggingFace, CC BY-SA), but the headline number comes from the vendor's own eval suite. After b8's benchmark-audit lesson, the reflex should be automatic: whose benchmark, whose gold labels, would it transfer to my warehouse?</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 9 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The four axes</b><span>RAG-retrieval (Vanna) · semantic-layer-first (WrenAI) · fine-tuned model (SQLCoder) · DIY agent (LangChain). Every tool bets on one.</span></div>
+      <div class="cheat-item"><b>Vanna = your b4</b><span>train() on DDL + docs + question-SQL pairs, retrieve per question. 23.8k stars, MIT - archived Mar 29, 2026; forks carry on.</span></div>
+      <div class="cheat-item"><b>WrenAI = your b5</b><span>MDL JSON semantic layer grown into a GenBI platform: RBAC, RLS, column permissions, 20+ connectors. Active.</span></div>
+      <div class="cheat-item"><b>LangChain agent = your b6</b><span>Official reference (24 stars, tutorial-scale): discover → inspect → generate → validate → execute → retry.</span></div>
+      <div class="cheat-item"><b>SQLCoder = the untaken road</b><span>Open-weights 7B-70B fine-tune; beat GPT-4 only on its own sql-eval, not Spider/BIRD. Dormant.</span></div>
+      <div class="cheat-item"><b>DB-GPT</b><span>Full platform: AWEL DAG workflows, SMMF for 50+ local LLMs; QLoRA CodeLlama-13B 82.5% Spider EX (vendor-reported).</span></div>
+      <div class="cheat-item"><b>Which-when</b><span>Embed in product → component. Governed self-serve → semantic platform. On Databricks/Snowflake → native (a3). Learning → DIY.</span></div>
+      <div class="cheat-item"><b>Freshness rule</b><span>Stars and statuses drift fast - github.com/topics/text-to-sql is the live ranking; always write the exit plan.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 9 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b8-evaluation.html">← Prev: Evaluating your agent</a> &nbsp;·&nbsp; <a href="b10-capstone-production.html">Next: Capstone + production →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

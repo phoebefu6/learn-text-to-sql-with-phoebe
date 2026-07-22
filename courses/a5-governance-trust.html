@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 5 · Governance + trust - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Leader session 5 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Leader track · Session 5 of 6</div>
+    <h1>Governance + trust: <span class="accent">the risk-officer session</span></h1>
+    <p class="sub">Sessions 1-4 asked whether text-to-SQL can be accurate. This session asks the questions your risk officer, auditor, and CISO will ask: who does the query run as, can you reproduce why the system said what it said, what happens when a plausible wrong answer reaches a real decision, and why vendor benchmark claims would not survive an audit. You leave with the checklist to run before any pilot goes live.</p>
+    <div class="chip-row">
+      <span class="chip level">🔵 Leader track</span>
+      <span class="chip audience">Execs · data leaders · PMs</span>
+      <span class="chip audience">No code needed</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Welcome</span>
+      <span class="a2" style="flex:4">3-18 · Access control &amp; audit trails</span>
+      <span class="a3" style="flex:5">18-42 · Trust, benchmarks &amp; the checklist</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why governance is where pilots die - or deserve to</h2>
+    </div>
+    <p class="lede">An LLM in the query path changes three things your existing BI governance never had to handle: a component that can produce a <strong>plausible wrong answer</strong>, a query author that is <strong>not a person</strong>, and answers that can <strong>differ between runs</strong>. None of these are reasons to say no. All of them are reasons to ask better questions than "what accuracy does the vendor claim" - and this session gives you those questions.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The one access-control question that sorts governed tools from shadow IT (who does the query run as?), the case for show-the-SQL as a trust feature, hard evidence that even academic benchmarks contain 52.8-66.1% annotation errors - so vendor claims deserve zero benefit of the doubt - and a five-point governance checklist you can run on any pilot next week.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: ACCESS CONTROL ============ -->
+  <section class="section" id="access">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Genie/Cortex/Vanna governance facts</span>
+      <h2>Access control with an LLM in the loop <span class="tag concept">12 min live</span></h2>
+    </div>
+    <p class="lede">The first question for any text-to-SQL tool is not about AI at all: <strong>when the system runs a query, WHO does it run as?</strong> If the answer is "the asking user, under their existing permissions," your row-level security keeps working. If the answer is "a service account" or "whatever data got exported," your access model just silently dissolved.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The governed path keeps user, permissions, semantic layer and warehouse in one governed chain; the shadow path exports CSVs to external tools and bypasses everything">
+        <style>
+          .g5aT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .g5aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .g5aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .g5aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .g5aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .g5aArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#g5aah); }
+        </style>
+        <defs>
+          <marker id="g5aah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="g5aH" x="30" y="34">Two paths for the same question - only one survives an audit</text>
+        <text class="g5aX" x="30" y="66">GOVERNED · identity and permissions travel with the question</text>
+        <rect x="30" y="78" width="150" height="60" rx="9" fill="#003B57"/>
+        <text class="g5aT" x="44" y="103">User</text>
+        <text class="g5aS" x="44" y="122">asks in English</text>
+        <rect x="240" y="78" width="170" height="60" rx="9" fill="#0F80CC"/>
+        <text class="g5aT" x="254" y="103">Permissions</text>
+        <text class="g5aS" x="254" y="122">RLS · runs AS the user</text>
+        <rect x="470" y="78" width="170" height="60" rx="9" fill="#0F80CC"/>
+        <text class="g5aT" x="484" y="103">Semantic layer</text>
+        <text class="g5aS" x="484" y="122">agreed definitions</text>
+        <rect x="700" y="78" width="160" height="60" rx="9" fill="#3DA0E3"/>
+        <text class="g5aT" x="714" y="103">Warehouse</text>
+        <text class="g5aS" x="714" y="122">query logged</text>
+        <path class="g5aArr" d="M180,108 L238,108"/>
+        <path class="g5aArr" d="M410,108 L468,108"/>
+        <path class="g5aArr" d="M640,108 L698,108"/>
+        <text class="g5aX" x="30" y="186">SHADOW · data leaves governance at the first hop</text>
+        <rect x="30" y="198" width="150" height="60" rx="9" fill="#003B57"/>
+        <text class="g5aT" x="44" y="223">User</text>
+        <text class="g5aS" x="44" y="242">asks in English</text>
+        <rect x="240" y="198" width="170" height="60" rx="9" fill="#526472"/>
+        <text class="g5aT" x="254" y="223">CSV export</text>
+        <text class="g5aS" x="254" y="242">RLS stripped here</text>
+        <rect x="470" y="198" width="170" height="60" rx="9" fill="#526472"/>
+        <text class="g5aT" x="484" y="223">External tool</text>
+        <text class="g5aS" x="484" y="242">no audit · no lineage</text>
+        <path class="g5aArr" d="M180,228 L238,228"/>
+        <path class="g5aArr" d="M410,228 L468,228"/>
+        <text class="g5aX" x="660" y="222">Answer looks the same</text>
+        <text class="g5aX" x="660" y="240">on screen. Nothing else is.</text>
+        <text class="g5aX" x="30" y="288">Cortex keeps data + RLS inside Snowflake; Genie inherits Unity Catalog; Vanna v2 added a user-aware identity flow + RLS.</text>
+        <rect x="30" y="310" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="g5aN" x="54" y="322">The sorting question: "who does the query run as?" Tools that cannot answer it are shadow IT with a chat window.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the governed path vs the shadow path for the same English question</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>How the major architectures answer the WHO question<span class="mini">6 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Tool / pattern</th><th>Where the query runs</th><th>Governance consequence</th></tr></thead>
+          <tbody>
+            <tr><td>Snowflake Cortex Analyst</td><td>Inside Snowflake - data never leaves</td><td>Existing RLS and governance stay intact by construction</td></tr>
+            <tr><td>Databricks Genie</td><td>Inside the workspace, on Unity Catalog metadata</td><td>Inherits Unity Catalog permissions - your catalog hygiene becomes your AI governance</td></tr>
+            <tr><td>Vanna (open source, v2)</td><td>Your deployment</td><td>v2 added a user-aware identity flow + row-level security - notable because the OSS world initially shipped without it</td></tr>
+            <tr><td>CSV-upload AI analysts (Julius-style)</td><td>External sandbox on exported files</td><td>Bypasses warehouse governance entirely - whatever was exported is now outside RLS, lineage, and audit</td></tr>
+          </tbody>
+        </table>
+        <p>The pattern to notice: warehouse-native tools inherit the governance you already built; export-based tools silently step outside it. Neither is automatically wrong - but only one of them is something your risk function has already approved without knowing it.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Audit trails: the last-Tuesday test<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A finance-grade audit question: <strong>can you reproduce why the system answered X last Tuesday?</strong> That requires logging the question, the exact SQL generated, the context that was retrieved to generate it, and the result returned - because a regenerated answer may differ. If the tool logs only "user asked a question," you cannot investigate a bad number after the fact, and every silent failure becomes unexplainable. Ask for the replay capability in the procurement conversation, not after the incident.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: TRUST CALIBRATION ============ -->
+  <section class="section" id="trust">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers Genie nondeterminism, show-the-SQL pattern</span>
+      <h2>Trust calibration: the plausible wrong answer <span class="tag concept">10 min live</span></h2>
+    </div>
+    <p class="lede">Recall session 2's core distinction: loud failures error out and announce themselves; <strong>silent failures return a plausible wrong number that ships into a real decision</strong>. That silent failure is the number one risk of this whole product category - and the mitigations are organizational as much as technical.</p>
+    <details class="card">
+      <summary><span class="mode live">Live</span>Three facts that set the trust posture<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Same question, different SQL.</strong> Databricks documents Genie as nondeterministic: the same question can yield different SQL on different runs. That is not a scandal - it is how LLMs work - but it means "we tested it once" is not a test, and it is why audit logs must capture the SQL actually run.</li>
+          <li><strong>Multi-candidate + human-visible SQL is the working mitigation.</strong> Generating several candidate queries and scoring them (the engineering pattern from Salesforce's production system) reduces wrong answers; showing the winning SQL lets a human catch what scoring missed.</li>
+          <li><strong>Show-the-SQL is a trust feature, not a technical detail.</strong> Readable SQL means an auditable answer - your analysts become the reviewers of the machine's work instead of being replaced by it. A tool that hides its SQL is asking your organization to trust an unreviewable black box with numbers that reach decisions.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>The posture to set from the top</strong>
+          Treat every answer as a draft from a fast junior analyst: excellent throughput, zero accountability. Drafts that inform real decisions get reviewed - which means the tool must make review possible (visible SQL) and someone must own doing it (an escalation path for suspected wrong answers).
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: BENCHMARK SKEPTICISM ============ -->
+  <section class="section" id="benchmarks">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers CIDR 2026 benchmark audit</span>
+      <h2>Benchmark skepticism as a governance skill <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Session 3 warned that vendor accuracy claims are internal and non-comparable. This session goes further, with evidence: even the <strong>academic</strong> benchmarks the whole field cites turn out to be substantially wrong - so any accuracy claim, from anyone, deserves audit-grade skepticism.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The CIDR 2026 audit found 52.8% annotation errors in BIRD Mini-Dev and 66.1% in Spider 2.0-Snow, and rankings swung after correction">
+        <style>
+          .g5bT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .g5bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .g5bC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .g5bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .g5bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="g5bH" x="30" y="34">The CIDR 2026 audit: how much of the answer key is wrong?</text>
+        <text class="g5bC" x="30" y="76">BIRD Mini-Dev</text>
+        <rect x="200" y="60" width="620" height="26" rx="5" fill="#E9F4FB"/>
+        <rect x="200" y="60" width="327" height="26" rx="5" fill="#0F80CC"/>
+        <text class="g5bT" x="214" y="78">52.8% of gold answers had annotation errors</text>
+        <text class="g5bC" x="30" y="126">Spider 2.0-Snow</text>
+        <rect x="200" y="110" width="620" height="26" rx="5" fill="#E9F4FB"/>
+        <rect x="200" y="110" width="410" height="26" rx="5" fill="#003B57"/>
+        <text class="g5bT" x="214" y="128">66.1% of gold answers had annotation errors</text>
+        <text class="g5bX" x="30" y="170">Most common error: the gold query does not match the actual data or schema (~56-58% of errors found).</text>
+        <rect x="30" y="190" width="820" height="66" rx="9" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="g5bC" x="48" y="216">After correcting the answer key, one system (CHESS) jumped 62% → 81% execution accuracy</text>
+        <text class="g5bC" x="48" y="238">and moved from 4th place to 1st. The leaderboard order itself was an artifact of bad labels.</text>
+        <rect x="30" y="284" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="g5bN" x="54" y="296">If peer-reviewed benchmarks miss this badly, a vendor's internal benchmark is marketing until proven otherwise.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the benchmark audit: even academic answer keys were majorly wrong, and rankings swung</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The governance conclusion: bake-offs on YOUR data only<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Chain the evidence: vendor benchmarks are internal and non-comparable (both flagship vendors claim 90%+); academic benchmarks carry 52.8-66.1% annotation errors; and correcting the labels reshuffled the rankings. The only number with governance standing is one you can audit end to end:</p>
+        <ul>
+          <li><strong>Accept only bake-offs on your golden set, with your data,</strong> scored by execution accuracy - the same questions, the same warehouse, every vendor. Session 6 shows how to build that set in a week.</li>
+          <li><strong>Put it in procurement language:</strong> "accuracy claims must be reproduced on customer-provided evaluation questions before contract" is a sentence your procurement team already knows how to enforce.</li>
+          <li><strong>Keep the golden set private.</strong> A test the vendor has seen is a test the vendor can curate for - the same lesson session 4 taught about quality being local to curation.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The audit that reshuffled a leaderboard.</strong> A UIUC team audited the field's two flagship benchmarks for CIDR 2026 and hand-checked the gold answers: 52.8% of BIRD Mini-Dev and 66.1% of Spider 2.0-Snow answers were wrong, mostly gold queries that did not match the actual data. On the corrected subset, CHESS - a system ranked 4th - jumped from 62% to 81% and took 1st place. Every SOTA claim you had read about those systems compared them against a broken answer key. That is why "we top the benchmark" should move you exactly zero dollars.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo">
+    <div class="section-kicker">
+      <span class="klabel">Demo · the checklist</span>
+      <h2>Governance review walk-through: a hypothetical Genie pilot <span class="tag demo">★ 10 min · live on screen</span></h2>
+    </div>
+    <p class="lede">Your sales analytics team wants to pilot Databricks Genie on the revenue schema. Before anyone says yes, walk this five-point review - out loud, in this order. It works unchanged for Cortex, an open-source deployment, or any vendor in session 3's landscape.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>Identity.</strong> Ask: who does the generated query run as? For Genie the answer should be the asking user via Unity Catalog. Get it demonstrated, not asserted - one query, one user, show me the audit log line.</p></div>
+      <div class="step"><p><strong>RLS inheritance.</strong> Have two users with different row-level permissions ask the identical revenue question. If they get identical numbers, RLS is not being inherited - stop the pilot until it is.</p></div>
+      <div class="step"><p><strong>Logging and replay.</strong> Pick yesterday's answer and ask the team to reproduce it: question, generated SQL, retrieved context, result. If they cannot replay it, you cannot investigate a wrong number after the fact - and Genie is documented as nondeterministic, so the log is the only record of what actually ran.</p></div>
+      <div class="step"><p><strong>Wrong-answer escalation.</strong> Who does a business user tell when a number looks off, and what happens next? Name a person, define a response, and make show-the-SQL part of the review - your analysts are the audit function here.</p></div>
+      <div class="step"><p><strong>Benchmark demanded.</strong> Require the pilot to be scored on your own golden set before expansion - not the vendor's internal benchmark. Set the bar and the silent-failure tolerance in writing now, so the expansion decision in session 6 is a measurement, not a negotiation.</p></div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Why this order</strong>
+      The first three are gates - fail any one and the pilot is not safe at any accuracy. The last two are calibration - they make the pilot's results mean something. Most failed deployments skipped straight to accuracy and never asked the first three.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Five questions for your team this week <span class="tag exercise">◐ 20 min total</span></h2>
+    </div>
+    <ul>
+      <li>Ask your platform owner: for any AI-over-data tool we run or evaluate, who does the query run as? If the answer takes more than a day to establish, that is itself the finding.</li>
+      <li>Ask security: do we have people exporting warehouse data to external AI tools today? The shadow path in this session exists at most companies before any official pilot does.</li>
+      <li>Ask the data team to run the last-Tuesday test on any current BI or AI tool: reproduce one answer from last week - question, query, result. Time how long it takes.</li>
+      <li>Ask who a business user would tell today if an AI-generated number looked wrong - and watch how long the room stays silent. That silence is your escalation-path gap.</li>
+      <li>Ask procurement to add one sentence to the next data-tool RFP: accuracy claims must be reproduced on customer-provided evaluation questions. Report back what vendors say.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into decision-ready sessions; the papers and benchmarks stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">CIDR 2026 benchmark audit (UIUC, p5-jin)</span><span class="note">Part 3 · 52.8% / 66.1% annotation-error rates and the 62% → 81% ranking swing</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Genie / Cortex / Vanna governance facts</span><span class="note">Parts 1-2 · where queries run, RLS inheritance, Genie's documented nondeterminism</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Platform-comparison governance angles (BI copilots, AI analysts)</span><span class="note">Part 1 · the CSV-export shadow path; full vendor landscape in session 3</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Why are silent failures a governance problem, not just an accuracy problem?</p>
+      <button class="qopt" type="button">A · They increase warehouse compute costs through wasted queries</button>
+      <button class="qopt" type="button">B · They only affect users without SQL skills</button>
+      <button class="qopt" type="button">C · A plausible wrong number ships into a real decision with no error, no ticket, and - without logging and visible SQL - no way to investigate it afterward</button>
+      <p class="qwhy">Governance exists to make failures visible, attributable, and correctable. Silent failures defeat all three unless you mandate audit logs, show-the-SQL review, and a wrong-answer escalation path - which is why they lead the checklist.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · Why do vendor benchmark claims fail audit standards?</p>
+      <button class="qopt" type="button">A · They are internal and non-comparable - and even the peer-reviewed academic benchmarks were found to have 52.8-66.1% annotation errors, with rankings that swung after correction</button>
+      <button class="qopt" type="button">B · Vendors deliberately fabricate their numbers</button>
+      <button class="qopt" type="button">C · Benchmarks only test open-source models, not commercial ones</button>
+      <p class="qwhy">No fabrication needed: internal benchmarks measure different questions on different data, so 90% and 90% are not comparable. And the CIDR 2026 audit showed even the field's flagship answer keys were majorly wrong. The only audit-grade number is a bake-off on your golden set with your data.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · What is the FIRST access-control question to ask any text-to-SQL tool?</p>
+      <button class="qopt" type="button">A · Which LLM does it use, and is it fine-tuned on SQL?</button>
+      <button class="qopt" type="button">B · Who does the generated query run as - does it execute under the asking user's existing permissions, so row-level security holds?</button>
+      <button class="qopt" type="button">C · How many queries per minute can it handle?</button>
+      <p class="qwhy">This one question sorts the market: Cortex and Genie keep queries inside existing warehouse governance, Vanna v2 added a user-aware identity flow + RLS, and CSV-export tools bypass governance entirely. Everything else in the checklist depends on this answer.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 5 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The WHO question</b><span>Who does the query run as? Governed tools execute under the asking user's permissions; RLS must demonstrably hold.</span></div>
+      <div class="cheat-item"><b>Governed vs shadow</b><span>User → permissions → semantic layer → warehouse = auditable. CSV export → external tool = governance bypassed at hop one.</span></div>
+      <div class="cheat-item"><b>The last-Tuesday test</b><span>Can you reproduce why the system answered X last Tuesday? Requires logging question, SQL, context, and result.</span></div>
+      <div class="cheat-item"><b>Nondeterminism</b><span>Genie is documented as nondeterministic - same question, possibly different SQL. "We tested it once" is not a test.</span></div>
+      <div class="cheat-item"><b>#1 risk</b><span>The plausible wrong answer in a real decision. Mitigations: multi-candidate generation + human-visible SQL + escalation path.</span></div>
+      <div class="cheat-item"><b>Show-the-SQL</b><span>Readable SQL = auditable answer. Your analysts become reviewers of the machine's work - a trust feature, not a detail.</span></div>
+      <div class="cheat-item"><b>Benchmarks are broken</b><span>CIDR 2026 audit: 52.8% (BIRD Mini-Dev) and 66.1% (Spider 2.0-Snow) annotation errors; one system swung 62% → 81%, 4th → 1st.</span></div>
+      <div class="cheat-item"><b>The only valid number</b><span>A bake-off on YOUR golden set with YOUR data, scored by execution accuracy, written into procurement terms.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 5 of 6 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a4-curation-tax.html">← Prev: The curation tax</a> &nbsp;·&nbsp; <a href="a6-adoption-playbook.html">Next: The adoption playbook →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

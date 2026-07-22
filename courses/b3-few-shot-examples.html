@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 3 · Few-shot examples - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 3 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 3 of 10</div>
+    <h1>Few-shot examples: <span class="accent">show, don't tell</span></h1>
+    <p class="sub">Schema linking (b2) stopped DaybreakGPT from inventing columns - but it still writes the wrong QUERY over the right tables. Tonight you add worked example pairs to the prompt and watch two silent failures flip to correct: LLMs imitate patterns, so a correct pattern in the prompt becomes a correct pattern in the output. You will also meet the catch: static examples plateau, and picking bad ones actively teaches the model bad habits.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">Prereq: b1-b2 · bar starts at 25%</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap the ladder</span>
+      <span class="a2" style="flex:4">3-18 · Why examples work &amp; picking good ones</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: flip Q5 and Q6</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where we are on the ladder</h2>
+    </div>
+    <p class="lede">Rung check. Naive baseline (b1): <strong>1/12 · 8%</strong>. Plus schema linking (b2): <strong>3/12 · 25%</strong> - the loud hallucinated-column errors are gone, but the silent family is untouched. Tonight's lever is <strong>few-shot examples</strong>: worked question-and-SQL pairs pasted into the prompt so the model has a pattern to imitate. Target: <strong>5/12 · 42%</strong>. Remember the thesis - the model is not the product, context is. We are not touching the model tonight; we are changing what it reads.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The anatomy of a few-shot prompt (system + schema + K example pairs + question), two silent failures you fix with your own eyes (the COUNT-vs-SUM trap and the group-then-average trap), a rule for choosing examples - match the question's SHAPE, quality beats quantity - and a clear view of the ceiling that sets up b4: static examples cannot cover every shape of question your users will ask.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail</strong>
+      The "model" in tonight's playgrounds is a deterministic simulation built for teaching: with examples off it makes the characteristic pattern mistakes real LLMs make, with examples on it imitates the pattern correctly. The SQL it writes genuinely executes against the Daybreak database in your browser - right and wrong are measured by execution, never asserted.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: WHY EXAMPLES WORK ============ -->
+  <section class="section" id="why-examples">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Vanna accuracy research</span>
+      <h2>Why examples work: LLMs imitate patterns <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">An LLM does not "know" that units sold means <code>SUM(quantity)</code> and not <code>COUNT(*)</code>. But show it one correct quantity-sum query in the prompt and it will reproduce the pattern - that is in-context learning, and it is the cheapest accuracy lever in the whole field. Here is where the examples sit in the prompt.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anatomy of a few-shot prompt: system instruction, linked schema, K example pairs, then the question">
+        <style>
+          .b3aT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b3aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .b3aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b3aC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b3aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b3aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b3aArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b3ah1); }
+        </style>
+        <defs>
+          <marker id="b3ah1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b3aH" x="30" y="36">Anatomy of the few-shot prompt - one bar, four blocks, read left to right</text>
+        <rect x="30" y="60" width="120" height="64" rx="10" fill="#003B57"/>
+        <text class="b3aT" x="44" y="86">System</text>
+        <text class="b3aS" x="44" y="106">rules, dialect</text>
+        <rect x="150" y="60" width="180" height="64" fill="#0F80CC"/>
+        <text class="b3aT" x="164" y="86">Schema</text>
+        <text class="b3aS" x="164" y="106">b2-linked tables only</text>
+        <rect x="330" y="60" width="330" height="64" fill="#3DA0E3"/>
+        <text class="b3aT" x="344" y="86">K example pairs · NEW tonight</text>
+        <text class="b3aS" x="344" y="106">question → SQL, question → SQL, ...</text>
+        <rect x="660" y="60" width="190" height="64" rx="10" fill="#9FCFEE"/>
+        <text class="b3aT" x="674" y="86" fill="#10222E">Question</text>
+        <text class="b3aS" x="674" y="106" fill="#10222E" opacity="1">"Top 3 by units sold"</text>
+        <path class="b3aArr" d="M495,124 L495,160"/>
+        <rect x="360" y="164" width="270" height="52" rx="10" fill="#7C3AED"/>
+        <text class="b3aT" x="376" y="186">LLM writes the SQL</text>
+        <text class="b3aS" x="376" y="204">imitates the nearest pattern it sees</text>
+        <text class="b3aC" x="30" y="196">Each pair is a worked answer:</text>
+        <text class="b3aC" x="30" y="214">a real question plus the SQL a</text>
+        <text class="b3aC" x="30" y="232">human verified. The model copies</text>
+        <text class="b3aC" x="30" y="250">its shape onto the new question.</text>
+        <text class="b3aX" x="660" y="196">Same pipeline as b1 -</text>
+        <text class="b3aX" x="660" y="214">only box 2 grew. The</text>
+        <text class="b3aX" x="660" y="232">model did not change.</text>
+        <text class="b3aX" x="30" y="280">Vanna's own research band for this rung: static examples reach 20-60% depending on the model. Wide - Part 2 explains why.</text>
+        <rect x="30" y="296" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b3aN" x="54" y="308">More context, same model, better SQL. This is the whole thesis of the course in one bar.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the few-shot prompt: system + schema + K example pairs + question</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>Two silent failures this lever kills<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Both of tonight's targets run fine and return plausible numbers - the dangerous family from b1. Neither is a schema problem; the tables and columns are right. They are <strong>pattern</strong> problems:</p>
+        <ul>
+          <li><strong>Q5, the COUNT-vs-SUM trap.</strong> "Top 3 products by units sold." The model writes <code>COUNT(*)</code> - counting order LINES, so a 5-bag line counts as 1 unit. One correct quantity query in the prompt teaches <code>SUM(quantity)</code>.</li>
+          <li><strong>Q6, the group-then-average trap.</strong> "Average order value." The model averages line items directly, so a multi-item order gets split into pieces. An example showing sum-per-order-then-average - group first, aggregate second - fixes the shape.</li>
+        </ul>
+        <p>Vanna's team measured this rung on their own workloads: schema-only prompting scored ~3%, adding static SQL examples reached <strong>20-60% depending on the model</strong>. That is their reported band, not an independent benchmark - but the shape (examples help a lot, then stall) repeats everywhere in the research.</p>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The analyst whose old queries became the product.</strong> A retail data team piloting text-to-SQL got their first real accuracy jump without writing a line of new code: they exported the 30 most-run queries from their BI tool's history, paired each with the plain-English request it had answered, and dropped the best ones into the prompt. The model stopped inventing aggregation patterns and started copying the house style - date filters, the standard revenue join, the naming conventions. Your BI backlog is a free training set; b3 is where you cash it in.</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="prompt-box">
+      <span class="label">DaybreakGPT at rung 3 - schema (b2) + two example pairs, then the question</span>
+You are a SQL expert. Write one SQLite query. Return only SQL.
+
+Schema (linked tables only):
+CREATE TABLE products (product_id INTEGER PRIMARY KEY, name TEXT,
+  category TEXT, price REAL, roast TEXT);
+CREATE TABLE order_items (order_id INTEGER, product_id INTEGER,
+  quantity INTEGER, unit_price REAL);
+
+Example 1
+Q: How many units of Sunrise Blend have we sold?
+SQL: SELECT SUM(oi.quantity) FROM order_items oi
+     JOIN products p ON p.product_id = oi.product_id
+     WHERE p.name = 'Sunrise Blend';
+
+Example 2
+Q: What is the average revenue per order?
+SQL: SELECT AVG(t.total) FROM (
+       SELECT SUM(quantity * unit_price) AS total
+       FROM order_items GROUP BY order_id) t;
+
+Question: Top 3 products by units sold
+    </div>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Where few-shot sits in the research taxonomy<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The IEEE TKDE survey on next-generation database interfaces sorts in-context-learning methods for text-to-SQL into five buckets: <strong>vanilla prompting</strong> (zero or few-shot, tonight's lever), <strong>decomposition</strong> (break the question into sub-problems), <strong>prompt optimization</strong> (choose the best examples and wording - Part 2 tonight is the manual version), <strong>reasoning</strong> (chain-of-thought style thinking before SQL), and <strong>execution refinement</strong> (use the database's reaction to improve the answer). This track walks the whole taxonomy: tonight covers the first and third, b6 picks up execution refinement, and b7's multi-candidate trick borrows from decomposition and reasoning. Nothing you meet later is exotic - it is all context and feedback engineering around the same frozen model.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: QUALITY > QUANTITY ============ -->
+  <section class="section" id="quality">
+    <div class="section-kicker">
+      <span class="klabel">Part 2</span>
+      <h2>Example quality beats example quantity <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">The 20-60% band is wide for a reason: WHICH examples you include matters more than how many. The model imitates whatever you show it - including your mistakes. Three rules keep the lever pointed the right way.</p>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The three rules of example selection<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Rule</th><th>Why</th><th>Anti-pattern</th></tr></thead>
+          <tbody>
+            <tr><td><strong>1 · Match the question's SHAPE</strong></td><td>A top-N example teaches top-N; it does nothing for a share-of-total question. Shape = aggregation pattern + join path + filter style, not topic.</td><td>Ten customer-count examples for a revenue-ranking question</td></tr>
+            <tr><td><strong>2 · Only verified SQL</strong></td><td>A wrong example is worse than none: the model will faithfully reproduce the bug. Every pair should have run in production or been human-checked.</td><td>Pasting a half-finished query from someone's scratch notebook</td></tr>
+            <tr><td><strong>3 · Keep them fresh</strong></td><td>Stale examples referencing renamed columns or retired tables re-introduce the loud failures b2 just killed.</td><td>Examples written before last quarter's schema migration</td></tr>
+          </tbody>
+        </table>
+        <p>Where good pairs come from: the <strong>BI backlog</strong> (questions analysts already answered, SQL already trusted), <strong>analyst query history</strong> (your warehouse logs it), and the <strong>golden set itself</strong> - though never test questions verbatim, or you are just memorizing the exam.</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>How many is K? The token-budget tradeoff<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Every example pair costs prompt tokens, and prompt space competes with schema (b2) and, from b4, retrieved docs. In practice teams run K between 3 and 10: below 3 the model has too few patterns to match against; beyond 10 the returns flatten while cost and latency climb, and irrelevant examples start to distract more than they teach. The real fix for "which K" is not a bigger K - it is choosing the RIGHT K for each question at query time. Hold that thought for exactly one section.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: THE CEILING ============ -->
+  <section class="section" id="ceiling">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers TKDE ICL taxonomy (light)</span>
+      <h2>The ceiling: static examples cannot cover the space <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Here is the trap in tonight's lever: your examples are STATIC - the same K pairs go into every prompt, no matter what is asked. Users ask questions in dozens of shapes. Whichever shapes your K pairs happen to cover get fixed; everything else stays broken. That is the plateau inside the 20-60% band.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Eight question shapes; three static examples cover three shapes, five stay uncovered, which motivates retrieval in b4">
+        <style>
+          .b3bT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .b3bK { font: 700 13px Inter, sans-serif; fill: #10222E; }
+          .b3bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b3bC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b3bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b3bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="b3bH" x="30" y="36">The shapes your users ask in - vs the K=3 examples in tonight's prompt</text>
+        <rect x="30" y="60" width="190" height="52" rx="10" fill="#0F80CC"/>
+        <text class="b3bT" x="44" y="83">Quantity sum</text>
+        <text class="b3bT" x="44" y="101" opacity=".85">✓ covered (Q5)</text>
+        <rect x="240" y="60" width="190" height="52" rx="10" fill="#0F80CC"/>
+        <text class="b3bT" x="254" y="83">Group then average</text>
+        <text class="b3bT" x="254" y="101" opacity=".85">✓ covered (Q6)</text>
+        <rect x="450" y="60" width="190" height="52" rx="10" fill="#0F80CC"/>
+        <text class="b3bT" x="464" y="83">Top-N ranking</text>
+        <text class="b3bT" x="464" y="101" opacity=".85">✓ covered</text>
+        <rect x="660" y="60" width="190" height="52" rx="10" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b3bK" x="674" y="83">Business vocab</text>
+        <text class="b3bX" x="674" y="101">✗ "active" = ? (Q7)</text>
+        <rect x="30" y="128" width="190" height="52" rx="10" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b3bK" x="44" y="151">Monthly rollup</text>
+        <text class="b3bX" x="44" y="169">✗ strftime (Q8)</text>
+        <rect x="240" y="128" width="190" height="52" rx="10" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b3bK" x="254" y="151">Date arithmetic</text>
+        <text class="b3bX" x="254" y="169">✗ within 30 days (Q12)</text>
+        <rect x="450" y="128" width="190" height="52" rx="10" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b3bK" x="464" y="151">Metric definition</text>
+        <text class="b3bX" x="464" y="169">✗ revenue rule (Q4)</text>
+        <rect x="660" y="128" width="190" height="52" rx="10" fill="#E9F4FB" stroke="#AEC4D2"/>
+        <text class="b3bK" x="674" y="151">Cohort / share-of</text>
+        <text class="b3bX" x="674" y="169">✗ signup cohorts</text>
+        <text class="b3bC" x="30" y="214">Filled = a static example in the prompt matches this shape, so the model imitates it correctly.</text>
+        <text class="b3bC" x="30" y="232">Outlined = no matching pattern in the prompt - the model guesses, and most guesses are silent.</text>
+        <text class="b3bX" x="30" y="262">You could add more static pairs, but every prompt pays for ALL of them, and the space of shapes keeps growing.</text>
+        <text class="b3bX" x="30" y="280">The b4 move: store MANY pairs outside the prompt, retrieve only the few that match THIS question.</text>
+        <rect x="30" y="302" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b3bN" x="54" y="314">Static = same K pairs for every question. Retrieval = the right pairs per question. That gap is b4.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - static examples cover three shapes; the other five wait for retrieval (b4)</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Reading the plateau honestly<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Tonight's scorecard will land at 42% - a real jump from 25%, and every point of it came from pattern coverage. But look at what still fails: Q7 needs to know "active" means <code>cancel_date IS NULL</code> (vocabulary, not pattern), Q8 needs the monthly-rollup convention, Q4 and Q11 need a metric DEFINITION of revenue. No quantity of static example pairs teaches meaning - and stuffing in pairs for every conceivable shape blows the token budget while burying the relevant pattern in noise. Vanna's research ladder points the way out: static examples 20-60%, contextually RETRIEVED examples ~80% (their reported numbers). Same lever, aimed per-question. That is next session.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Flip the pattern traps <span class="tag demo">★ 14 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">DaybreakGPT below has schema linking ON (b2's rung) and few-shot examples OFF. Three questions loaded: the two pattern traps and one preview of the ladder's habit of exposing the next failure.</p>
+
+    <div class="steps">
+      <div class="step"><p>Ask <strong>Q5</strong> with examples off. It runs fine and ranks products by <code>COUNT(*)</code> - order lines, not units. A <strong>silent</strong> failure: read the Why note, then check the verdict against gold.</p></div>
+      <div class="step"><p>Ask <strong>Q6</strong> with examples off. Average of line items, not orders - runs, looks plausible, wrong. Silent again.</p></div>
+      <div class="step"><p>Toggle <strong>Few-shot examples ON</strong>. Re-ask Q5 and Q6 - both flip to matching gold. The pattern in the prompt became the pattern in the SQL.</p></div>
+      <div class="step"><p>Now ask <strong>Q10</strong> (revenue per customer) both ways. Examples off: a <strong>loud</strong> error - it assumes an order total column instead of the two-join path. Examples on: the join path is right, the query RUNS... and silently includes cancelled orders. The ladder just exposed the next missing lever - the revenue definition lives in b5's semantic layer.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="schema,examples" data-on="schema" data-q="5,6,10"></div>
+
+    <div class="callout tip">
+      <strong>Check it against real SQL</strong>
+      Don't take the verdict's word for it. Here is the gold Q5 on the same live database - swap SUM(oi.quantity) for COUNT(*) and re-run to reproduce the trap by hand. Watch the rankings reshuffle.
+    </div>
+    <div class="sqlbox" data-caption="Gold Q5: units sold = SUM(quantity). Change SUM(oi.quantity) to COUNT(*) and compare the top 3.">
+      <pre class="sql-src">SELECT p.name, SUM(oi.quantity) AS units
+FROM order_items oi
+JOIN products p ON p.product_id = oi.product_id
+GROUP BY p.name ORDER BY units DESC LIMIT 3;</pre>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Re-run the golden set <span class="tag demo">★ 8 min · measure the rung</span></h2>
+    </div>
+    <p class="lede">Same 12 questions as every session, one more lever on. Last session ended at 3/12 - 25%. Run it and watch which questions move and, just as important, which do not.</p>
+
+    <div class="t2s" data-mode="scorecard" data-levers="schema,examples" data-on="schema,examples"></div>
+
+    <div class="callout win">
+      <strong>★ The number to remember</strong>
+      5/12 - 42%, up from 25%. Q5 and Q6 flipped on pattern imitation alone; nothing else moved, because the remaining failures are not pattern problems. Vocabulary (Q7), conventions (Q8), definitions (Q4, Q9, Q10, Q11), dialect and date gymnastics (Q12) all need context that static examples do not carry. Write 42% down - b4's retrieval takes the bar to 58%.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 20-30 min total</span></h2>
+    </div>
+    <ul>
+      <li>In the Demo 1 playground, run all three questions with examples off and predict before each Why note: is this failure loud or silent, and what pattern would fix it?</li>
+      <li>Reproduce Q6's trap in the live SQL editor: write the naive <code>AVG(quantity * unit_price)</code> over order_items, then the gold group-then-average version, and explain the gap in one sentence.</li>
+      <li>Pull (or recall) the 10 most-asked questions at your workplace and sort them by SHAPE - top-N, rollup, share-of, cohort, definition. Which shapes would 3 static examples cover? That is your predicted plateau.</li>
+      <li>Write one example pair from your own work - a real question plus verified SQL - and check it against the three rules: shape-relevant, verified, fresh.</li>
+      <li>Find one STALE query in your history (renamed column, retired table). If it were in a prompt today, would the failure be loud or silent? (Trick: think b2.)</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into runnable sessions; papers and leaderboards stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Vanna accuracy research (context strategy ladder)</span><span class="note">Parts 1-3 · the static-examples 20-60% band and the ~80% retrieval rung it points to - their reported numbers, cashed in next session</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">IEEE TKDE survey - ICL 5-category taxonomy</span><span class="note">Part 1 self-study · vanilla prompting / decomposition / prompt optimization / reasoning / execution refinement; b6-b7 finish the tour</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · Asked for "top products by units sold", a model with no examples wrote COUNT(*). Why is that wrong, and why did nothing warn anyone?</p>
+      <button class="qopt" type="button">A · COUNT(*) is invalid SQLite, so the database threw an error nobody read</button>
+      <button class="qopt" type="button">B · COUNT(*) counts order lines, not units - a 5-bag line counts as 1 - and the query runs fine, so the failure is silent</button>
+      <button class="qopt" type="button">C · COUNT(*) is correct; the real bug was a missing JOIN to products</button>
+      <p class="qwhy">The query executes and returns a plausible ranking - the silent family from b1. Units sold needs SUM(quantity), and the model only learns that pattern from a worked example (or, later, a semantic definition).</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">2 · Which example set most improves a prompt for the question "average order value"?</p>
+      <button class="qopt" type="button">A · Ten verified examples of counting customers by city</button>
+      <button class="qopt" type="button">B · One unverified average-order-value query from a scratch notebook</button>
+      <button class="qopt" type="button">C · One verified example of the group-then-aggregate shape, even on a different topic</button>
+      <p class="qwhy">Shape beats topic and quality beats quantity. Ten count-by-city pairs teach nothing about grouping-then-averaging; an unverified query teaches its bugs. One verified pattern of the right SHAPE is exactly what the model imitates.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">3 · Why do static few-shot examples plateau instead of climbing to the top of the ladder?</p>
+      <button class="qopt" type="button">A · The same K pairs go into every prompt, so only the question shapes they happen to cover get fixed - and no example teaches vocabulary or metric definitions</button>
+      <button class="qopt" type="button">B · Models can only pay attention to one example at a time</button>
+      <button class="qopt" type="button">C · Examples slow the model down until it times out on hard questions</button>
+      <p class="qwhy">Static means one-size-fits-all: coverage stops at whatever shapes you picked, extra pairs cost tokens on every question, and meaning ("active", "revenue") is not a pattern at all. Retrieving the right examples per question - b4 - is the way past it.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 3 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The lever</b><span>Few-shot examples: verified question-and-SQL pairs in the prompt. The model imitates the nearest pattern.</span></div>
+      <div class="cheat-item"><b>Prompt anatomy</b><span>system + linked schema (b2) + K example pairs + question. Only the context grew - the model never changed.</span></div>
+      <div class="cheat-item"><b>COUNT-vs-SUM trap</b><span>Units sold = SUM(quantity), not COUNT(*) of lines. Silent failure; one quantity example fixes it (Q5).</span></div>
+      <div class="cheat-item"><b>Group-then-average</b><span>Order value = sum per order first, then average - never AVG over raw line items (Q6).</span></div>
+      <div class="cheat-item"><b>Three rules</b><span>Match the question's shape · only verified SQL · keep examples fresh. A wrong example teaches its bug.</span></div>
+      <div class="cheat-item"><b>Where pairs come from</b><span>BI backlog + analyst query history - already gold-labeled by production use. Free training data.</span></div>
+      <div class="cheat-item"><b>The band</b><span>Vanna's reported ladder: schema only ~3% → static examples 20-60% (model-dependent) → retrieved ~80%.</span></div>
+      <div class="cheat-item"><b>The rung</b><span>3/12 → 5/12 (25% → 42%). Q10 now fails silently instead of loudly - the ladder exposed b5's job. Next: b4 retrieval.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 3 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b2-schema-linking.html">← Prev: Schema linking</a> &nbsp;·&nbsp; <a href="../index.html">All sessions</a> &nbsp;·&nbsp; <a href="b4-rag-over-metadata.html">Next: RAG over metadata →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 2 · The accuracy cliff - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Leader session 2 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-Phoebe · Leader track · Session 2 of 6</div>
+    <h1>The <span class="accent">accuracy cliff</span>: the numbers behind the demos</h1>
+    <p class="sub">This is the evidence session. Last time you learned to distrust demos on instinct; today you get the published numbers that turn instinct into a board-ready argument. One staircase of benchmarks runs from "solved" to "10% correct" - and every vendor demo you have ever seen lives on the top step. You will also watch a text-to-SQL system fail live, in your browser, in the two ways that matter: loudly and silently.</p>
+    <div class="chip-row">
+      <span class="chip level">🔵 Leader track</span>
+      <span class="chip audience">Execs · data leaders · PMs</span>
+      <span class="chip audience">No code needed</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-18 · The benchmark ladder</span>
+      <span class="a3" style="flex:4">18-35 · Silent vs loud + why</span>
+      <span class="a4" style="flex:2">35-45 · Watch it fail live</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Why an executive needs benchmark literacy</h2>
+    </div>
+    <p class="lede">Every vendor will show you an accuracy number. None of those numbers are comparable, and most are measured on tests that flatter the product (a3 goes deep on that). The defense is cheap: know the four public benchmarks, know roughly what frontier models score on each, and know which one looks like <em>your</em> warehouse. That is 15 minutes of learning that changes every vendor conversation you will ever have in this category.</p>
+    <div class="legend">
+      <span class="pill solid">Live - discussed in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The benchmark ladder in plain English (WikiSQL → Spider → BIRD → Spider 2.0) with the numbers attached; the silent-vs-loud failure distinction - the single most important risk concept in this field; why the cliff exists (and why the fixes are context, not bigger models); and a live demonstration you can replay for your own leadership team.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE BENCHMARK LADDER ============ -->
+  <section class="section" id="ladder">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Spider 2.0 + BIRD headline results</span>
+      <h2>The benchmark ladder in plain English <span class="tag concept">15 min live</span></h2>
+    </div>
+    <p class="lede">Academia has spent a decade building harder and harder tests for text-to-SQL. Read bottom to top and it is a story of progress; read top to bottom - the direction your warehouse sits in - and it is a cliff.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Benchmark staircase descending from WikiSQL solved, to Spider 86 to 91 percent, to BIRD 54.89 percent, to Spider 2.0 at 10.1 percent">
+        <style>
+          .a2cT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a2cS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .a2cB { font: 700 22px Inter, sans-serif; fill: #10222E; }
+          .a2cH { font: 700 13px Inter, sans-serif; fill: #10222E; }
+          .a2cC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .a2cX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .a2cN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <text class="a2cH" x="30" y="34">Same frontier models, harder tests - execution accuracy at each step down</text>
+        <rect x="30" y="56" width="190" height="70" rx="10" fill="#9FCFEE"/>
+        <text class="a2cT" x="46" y="82" fill="#10222E">WikiSQL (2017)</text>
+        <text class="a2cC" x="46" y="102">single-table questions</text>
+        <text class="a2cC" x="46" y="118">solved · historical</text>
+        <rect x="240" y="120" width="190" height="86" rx="10" fill="#3DA0E3"/>
+        <text class="a2cT" x="256" y="146">Spider (2018)</text>
+        <text class="a2cS" x="256" y="166">academic, multi-table</text>
+        <text class="a2cS" x="256" y="184">frontier: ~86-91%</text>
+        <rect x="450" y="184" width="190" height="86" rx="10" fill="#0F80CC"/>
+        <text class="a2cT" x="466" y="210">BIRD (2023)</text>
+        <text class="a2cS" x="466" y="230">dirty data, knowledge</text>
+        <text class="a2cS" x="466" y="248">GPT-4: 54.89%</text>
+        <rect x="660" y="268" width="190" height="86" rx="10" fill="#003B57"/>
+        <text class="a2cT" x="676" y="294">Spider 2.0 (2025)</text>
+        <text class="a2cS" x="676" y="314">real enterprise DBs</text>
+        <text class="a2cS" x="676" y="332">GPT-4o: 10.1%</text>
+        <path d="M240,132 L240,56 L232,56" stroke="#AEC4D2" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+        <path d="M450,196 L450,120 L442,120" stroke="#AEC4D2" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+        <path d="M660,280 L660,184 L652,184" stroke="#AEC4D2" stroke-width="2" fill="none" stroke-dasharray="5 4"/>
+        <text class="a2cB" x="300" y="100">▼ every vendor demo lives here</text>
+        <text class="a2cX" x="300" y="122">rehearsed questions at Spider-level difficulty</text>
+        <text class="a2cX" x="470" y="292">humans score 92.96% on BIRD -</text>
+        <text class="a2cX" x="470" y="308">the machine gap is real</text>
+        <rect x="30" y="374" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="a2cN" x="54" y="386">Your warehouse looks like the bottom step: 1,000+ columns, cryptic names, 100+ line answers.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the benchmark staircase: ~86% where demos live, 10.1% where your warehouse lives</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The four steps, one line each<span class="mini">6 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>WikiSQL (2017) - solved.</strong> 80,654 questions over single Wikipedia tables. Useful history, no longer informative.</li>
+          <li><strong>Spider (2018) - the academic standard.</strong> 10,181 questions across 200 multi-table databases. Frontier models score roughly 86-91% execution accuracy. This is the difficulty level every polished vendor demo operates at.</li>
+          <li><strong>BIRD (2023) - realism arrives.</strong> Dirty data, external business knowledge required. Humans score 92.96%; GPT-4 scored 54.89%. One telling detail: adding a single sentence of business "evidence" per question lifted GPT-4 by about 20 points - the earliest hard proof that context beats model size.</li>
+          <li><strong>Spider 2.0 (2025) - enterprise reality.</strong> 632 problems from real enterprise workflows: databases with 1,000+ columns, answers running past 100 lines of SQL. GPT-4o: <strong>10.1%</strong>, versus 86.6% on original Spider. Same model, real work, one-eighth the score.</li>
+        </ul>
+        <p>The board-ready sentence: <em>"The models that ace the benchmark in the demo score about 10% on the benchmark that looks like our warehouse."</em></p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The hopeful footnote - agents climb the cliff<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Spider 2.0 is not a dead end. By mid-2026 the leaderboard is dominated by <em>agentic</em> systems - pipelines that retrieve metadata, execute, catch errors, and retry - scoring near 96.7 on the Snow setting versus 10-17 for bare models. Read that carefully: the models did not get nine times smarter in a year. The systems around them got better at assembling context and checking work. That is precisely the engineering (and curation) effort a4 teaches you to budget for, and it is why "which model do you use?" is one of the weakest questions you can ask a vendor.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: SILENT VS LOUD ============ -->
+  <section class="section" id="silent">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the failure-mode framing</span>
+      <h2>Silent vs loud failure: the executive risk concept <span class="tag concept">10 min live</span></h2>
+    </div>
+    <p class="lede">If you retain one idea from this entire track, make it this one. Text-to-SQL systems fail in two ways, and they are not equally dangerous. A <strong>loud</strong> failure throws a database error: annoying, visible, honest. A <strong>silent</strong> failure runs perfectly and returns a plausible wrong number - and plausible wrong numbers travel.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two lanes: a loud failure stops at the user, a silent failure travels all the way into a board deck">
+        <style>
+          .a2fT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .a2fH { font: 700 13px Inter, sans-serif; fill: #10222E; }
+          .a2fC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .a2fX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .a2fN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .a2fArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#a2fah); }
+        </style>
+        <defs>
+          <marker id="a2fah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="a2fH" x="30" y="34">How far does each failure travel?</text>
+        <rect x="30" y="56" width="150" height="24" rx="6" fill="#991B1B"/>
+        <text class="a2fT" x="44" y="73">LOUD failure</text>
+        <rect x="30" y="90" width="180" height="56" rx="10" fill="#FEF2F2" stroke="#FCA5A5"/>
+        <text class="a2fC" x="44" y="112">"no such column"</text>
+        <text class="a2fC" x="44" y="130">database error</text>
+        <rect x="270" y="90" width="180" height="56" rx="10" fill="#FEF2F2" stroke="#FCA5A5"/>
+        <text class="a2fC" x="284" y="112">user sees the error,</text>
+        <text class="a2fC" x="284" y="130">asks an analyst · STOP</text>
+        <path class="a2fArr" d="M210,118 L268,118"/>
+        <text class="a2fX" x="480" y="122">honest: it announces itself, and agentic systems can even retry it</text>
+        <rect x="30" y="176" width="150" height="24" rx="6" fill="#7C3AED"/>
+        <text class="a2fT" x="44" y="193">SILENT failure</text>
+        <rect x="30" y="210" width="180" height="56" rx="10" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="a2fC" x="44" y="232">query runs fine,</text>
+        <text class="a2fC" x="44" y="250">number looks right</text>
+        <rect x="270" y="210" width="180" height="56" rx="10" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="a2fC" x="284" y="232">pasted into a slide,</text>
+        <text class="a2fC" x="284" y="250">emailed upward</text>
+        <rect x="510" y="210" width="180" height="56" rx="10" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="a2fC" x="524" y="232">lands in a board deck,</text>
+        <text class="a2fC" x="524" y="250">drives a real decision</text>
+        <path class="a2fArr" d="M210,238 L268,238"/>
+        <path class="a2fArr" d="M450,238 L508,238"/>
+        <rect x="30" y="298" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="a2fN" x="54" y="310">Danger ranking: silent wrong &gt; loud error &gt; no answer. Executives only ever meet the first kind.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - loud failures stop at the user; silent failures travel into decisions</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Why silent failures are a governance problem, not a bug<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A dashboard built by an analyst carries implicit accountability: someone wrote that query, someone can be asked. A chat answer carries the same visual confidence with none of the accountability - the "author" is a model that cannot be asked what it meant. Three consequences for a leader:</p>
+        <ul>
+          <li><strong>Wrong-but-plausible is the #1 risk of the category</strong> - not downtime, not cost, not even data leakage (a5 covers those). Budget your skepticism accordingly.</li>
+          <li><strong>Loud failures are recoverable by machines;</strong> silent ones are only recoverable by humans who know what the number should roughly be. Your experienced analysts become more valuable, not less.</li>
+          <li><strong>Any tool you evaluate must be measured on silent failures specifically</strong> - a3 turns that into a bake-off procedure, a6 into a pilot design.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The pilot that reported revenue 30% high for days.</strong> A BI team piloted a chat-with-data tool. Week one, the demo wowed the sponsor on rehearsed questions. Week three, a regional manager asked for last quarter's revenue and got a number 30% high - the tool had summed list prices instead of order-line prices. The query ran perfectly. Nothing errored. Nobody noticed for days, because the number was plausible. The eventual fix was not a better model: it was writing the definition of revenue somewhere the system could read, and a golden set of checked questions that would have caught the miss in minutes.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: WHY THE CLIFF EXISTS ============ -->
+  <section class="section" id="why">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers the error-analysis evidence</span>
+      <h2>Why the cliff exists - and why the fixes are context <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">The cliff is not mysterious, and it is not a model IQ problem - the same model scores 86.6% and 10.1% depending on the test. Two structural causes, one conclusion.</p>
+    <details class="card">
+      <summary><span class="mode live">Live</span>Two causes, one conclusion<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Cause 1: enterprise schemas are huge and cryptic.</strong> Thousand-column databases, tables named by systems long retired, three tables that all look like they hold revenue. Published error analysis of 4,602 real failures found <strong>81.2% were schema errors</strong> - the model picked the wrong table or invented a column. Wrong schema pick is also exactly how silent failures are born.</li>
+          <li><strong>Cause 2: business meaning lives in nobody's schema.</strong> What counts as "revenue"? Delivered orders only? Net of refunds? Which fiscal calendar? No schema dump answers that - it lives in your analysts' heads, in dbt docs, in tribal knowledge. BIRD proved the point quantitatively: one sentence of business evidence per question was worth ~20 points of accuracy to GPT-4.</li>
+          <li><strong>Conclusion: every fix that works is context engineering.</strong> Retrieving the right metadata, supplying example queries, writing metric definitions into a semantic layer, letting the system check and retry. The next session shows how each vendor packages exactly these levers; a4 shows what they cost your team to maintain.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The question to carry into every vendor meeting<span class="mini">1 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Not "how accurate is it?" but <strong>"accurate on what?"</strong> Any accuracy claim without a named benchmark and a described test set is marketing. And if the benchmark named is Spider-level - or the vendor's own internal set - you now know exactly which step of the staircase you are being shown, and which step you actually live on. a3 sharpens this into a full evaluation checklist.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Watch it fail, live <span class="tag demo">★ 8 min · no code, just click</span></h2>
+    </div>
+    <p class="lede">Below is a naive text-to-SQL system over a small coffee-business warehouse - the same one the builder track dissects. You are about to see, in three clicks, the demo effect and both failure families. The SQL it writes really executes in your browser.</p>
+
+    <div class="steps">
+      <div class="step"><p>Ask <strong>Q1</strong> (how many customers). It answers correctly - this is the demo effect. Easy questions work, and vendor demos are built from easy questions.</p></div>
+      <div class="step"><p>Ask <strong>Q4</strong> (total revenue from delivered orders). The query runs cleanly and returns a plausible number - which is <strong>wrong</strong>: it quietly includes cancelled orders. This is the silent failure from Part 2, live. Read the "Why" note under the result.</p></div>
+      <div class="step"><p>Ask <strong>Q11</strong> (which channel drives the most revenue). It confidently answers a different question - most <em>orders</em>, not most <em>revenue</em>. Metric ambiguity: the failure a written metric definition exists to prevent (a4).</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="" data-on="" data-q="1,4,11"></div>
+
+    <div class="callout ai">
+      <strong>🤖 What you are looking at</strong>
+      The "model" here is a deterministic simulation built for teaching: each question carries the characteristic mistake real LLMs make when the relevant context is missing, at rates the research on this page documents. The SQL genuinely runs against a real SQLite database in your browser - right and wrong are decided by execution, not by us.
+    </div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>The honest baseline number <span class="tag demo">★ 4 min · run the scorecard</span></h2>
+    </div>
+    <p class="lede">Three questions is an anecdote. Here is the measurement: all 12 questions of a small golden set, run through the same naive system, scored by comparing each result against a human-verified answer. This is execution accuracy - the same metric Spider and BIRD use, on a set small enough to read in full.</p>
+
+    <div class="t2s" data-mode="scorecard" data-levers="" data-on=""></div>
+
+    <div class="callout win">
+      <strong>★ The number to remember</strong>
+      Around 8% - one question in twelve. That is what raw "point an LLM at the schema" delivers on questions with business meaning, and it rhymes with the published range: ~3% in open-source framework research, ~10% on Spider 2.0, near 0% on the BEAVER enterprise benchmark. When a vendor shows you 90%+, your first question is now automatic: measured on what, and who curated it? That question is the whole of session a3.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Ask your team - this week <span class="tag exercise">◐ 30 min of conversations</span></h2>
+    </div>
+    <ul>
+      <li>Ask your data lead how many tables and columns your main warehouse has. If it is hundreds of tables, you live on the Spider 2.0 step of the staircase - say so in the next vendor meeting.</li>
+      <li>Ask for the last incident where a wrong number reached leadership. How long did it circulate, and what caught it? That is your organization's silent-failure detection time.</li>
+      <li>Ask which three metrics have the most contested definitions ("revenue", "active", "churn" are the usual suspects). Those are where a chat tool will fail silently first.</li>
+      <li>Ask any vendor in your pipeline: "what benchmark is your accuracy number measured on, and can we see the questions?" Note whether the answer names Spider-level academic sets or an internal set.</li>
+      <li>Replay Demo 1 for one colleague - Q1 then Q4 - and watch their reaction to the plausible wrong revenue number. That reaction is the risk conversation this session exists to start.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the research into discussion-ready sessions; the papers stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Spider 2.0 (ICLR 2025) headline results</span><span class="note">Part 1 · the 86.6% → 10.1% cliff; the agents-climb-it story returns in a6</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">BIRD benchmark (NeurIPS 2023)</span><span class="note">Part 1 · human 92.96% vs GPT-4 54.89%; the +20pp evidence sentence</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Published error analyses (schema-error share)</span><span class="note">Part 3 · 81.2% of 4,602 failures were schema errors; technique detail lives in builder b2</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">1 · On the benchmark ladder, where do vendor demos live?</p>
+      <button class="qopt" type="button">A · Spider 2.0 - vendors demo on the hardest test to prove robustness</button>
+      <button class="qopt" type="button">B · Spider-level difficulty - academic multi-table questions where frontier models score ~86-91%</button>
+      <button class="qopt" type="button">C · WikiSQL - single-table questions only</button>
+      <p class="qwhy">Demos operate at the difficulty where models shine: clean multi-table questions, ~86-91% territory. Your warehouse looks like Spider 2.0, where the same models score ~10%. "Accurate on what?" is the question that exposes the gap.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · What is a silent failure?</p>
+      <button class="qopt" type="button">A · The query runs without error and returns a plausible but wrong number - which can travel all the way into a board deck</button>
+      <button class="qopt" type="button">B · The system declines to answer and logs nothing</button>
+      <button class="qopt" type="button">C · The query fails with a database error the user never sees</button>
+      <p class="qwhy">Loud failures announce themselves and stop at the user. Silent ones look exactly like right answers - Q4's cancelled-orders revenue in the demo is the canonical case. Danger ranking: silent wrong &gt; loud error &gt; no answer.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">3 · In published error analysis of 4,602 real text-to-SQL failures, roughly what share were schema mistakes (wrong table or column)?</p>
+      <button class="qopt" type="button">A · About 25% - most failures are SQL syntax errors</button>
+      <button class="qopt" type="button">B · About 50% - schema and logic errors split evenly</button>
+      <button class="qopt" type="button">C · Over 80% - picking the wrong table or inventing a column dominates everything else</button>
+      <p class="qwhy">81.2% were schema errors. The model writes fluent SQL about the wrong things - which is why the highest-value fixes are about getting the right schema and meaning into context, not about model size.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 2 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The ladder</b><span>WikiSQL (solved) → Spider (~86-91%, where demos live) → BIRD (GPT-4 54.89%, humans 92.96%) → Spider 2.0 (GPT-4o 10.1%).</span></div>
+      <div class="cheat-item"><b>The board line</b><span>"Models that ace the demo benchmark score about 10% on the benchmark that looks like our warehouse."</span></div>
+      <div class="cheat-item"><b>Loud failure</b><span>Database error. Visible, honest, machine-recoverable. Annoying but safe.</span></div>
+      <div class="cheat-item"><b>Silent failure</b><span>Runs fine, plausible wrong number, travels into decisions. The #1 risk of the whole category.</span></div>
+      <div class="cheat-item"><b>Danger ranking</b><span>Silent wrong &gt; loud error &gt; no answer. Executives only ever meet the first kind.</span></div>
+      <div class="cheat-item"><b>Why the cliff</b><span>81.2% of analyzed failures are schema errors; business meaning lives in nobody's schema. Context problem, not IQ problem.</span></div>
+      <div class="cheat-item"><b>The question</b><span>Never "how accurate?" - always "accurate on what, and can we see the questions?"</span></div>
+      <div class="cheat-item"><b>Next session</b><span>a3 - the vendor landscape: Genie vs Cortex Analyst head-to-head, and how to compare claims built not to be compared.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 2 of 6 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a1-self-serve-dream.html">← Prev: The self-serve dream</a> &nbsp;·&nbsp; <a href="a3-vendor-landscape.html">Next: The vendor landscape →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

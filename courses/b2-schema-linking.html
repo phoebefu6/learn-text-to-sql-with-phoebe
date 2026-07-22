@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 2 · Schema linking - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 2 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 2 of 10</div>
+    <h1>Point at the right tables: <span class="accent">schema linking</span></h1>
+    <p class="sub">Last session DaybreakGPT scored 1 of 12 and kept inventing columns that do not exist. Tonight you fix the single biggest failure family in the entire field: mapping question phrases to the right tables and columns. You will watch the loud errors die, watch the accuracy bar climb from 8% to 25% - and then discover the unsettling part: the questions that still fail now fail quietly.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-18 · The 81% failure family</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: kill the ghosts</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>Where the ladder stands</h2>
+    </div>
+    <p class="lede">The track thesis: <strong>the model is not the product - context is.</strong> Rung zero (b1) put nothing but a raw schema dump in the prompt and scored ~8% on the golden set. Tonight adds the first context lever - <strong>schema linking</strong> - the one that published error analysis says matters most. Every session ends the same way: toggle the new lever, re-run the same 12 questions, watch the bar move.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A working definition of schema linking (question phrase → real table/column, nothing invented), the headline stat that makes it lever #1 (81.2% of 4,602 analyzed failures were schema errors), the prompt-all vs retrieve-a-subset tradeoff every real system wrestles with, and a hard-won lesson: fixing one context layer exposes the next one underneath.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Honesty rail</strong>
+      The playground "model" on this page is a deterministic teaching simulation: with the schema lever off it makes the canonical hallucinations real LLMs make, and with it on those go away. The SQL it writes genuinely executes against a real SQLite Daybreak database in your browser - right and wrong are decided by execution, not by us.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: WHAT SCHEMA LINKING IS ============ -->
+  <section class="section" id="what">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers the 4,602-query error analysis</span>
+      <h2>What schema linking is - and why it is failure #1 <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Schema linking is the pre-processing step that maps the phrases in a question onto the actual objects in your database: "Pro plan" → <code>customers.plan</code>, "cancelled" → <code>subscriptions.cancel_date</code>. When that mapping is missing, the model does what language models do - it invents a plausible-sounding object. The database calls those inventions <strong>ghosts</strong>: columns and tables that simply do not exist.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Question phrases mapped to real schema objects with schema linking, and to hallucinated ghosts without it">
+        <style>
+          .b2aT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .b2aH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b2aG { font: 600 12px Inter, sans-serif; fill: #7C3AED; }
+          .b2aC { font: 600 12px Inter, sans-serif; fill: #526472; }
+          .b2aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b2aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b2aArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b2ah1); }
+          .b2aBad { stroke: #7C3AED; stroke-width: 2; fill: none; stroke-dasharray: 5 4; marker-end: url(#b2ah2); }
+        </style>
+        <defs>
+          <marker id="b2ah1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+          <marker id="b2ah2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#7C3AED"/>
+          </marker>
+        </defs>
+        <text class="b2aH" x="40" y="32">One phrase, two destinations: the real object or a ghost</text>
+        <text class="b2aC" x="40" y="60">Question phrase</text>
+        <text class="b2aC" x="560" y="60">Where it lands</text>
+        <rect x="40" y="78" width="200" height="34" rx="8" fill="#003B57"/>
+        <text class="b2aT" x="54" y="100">"on the Pro plan"</text>
+        <rect x="560" y="64" width="250" height="32" rx="8" fill="#0F80CC"/>
+        <text class="b2aT" x="574" y="85">customers.plan</text>
+        <rect x="560" y="106" width="250" height="32" rx="8" fill="#F8F5FE" stroke="#DDD0F7" stroke-dasharray="6 4"/>
+        <text class="b2aG" x="574" y="127">subscription_tier ? (Q2)</text>
+        <path class="b2aArr" d="M240,89 L556,81"/>
+        <path class="b2aBad" d="M240,101 L556,121"/>
+        <rect x="40" y="168" width="200" height="34" rx="8" fill="#003B57"/>
+        <text class="b2aT" x="54" y="190">"which city"</text>
+        <rect x="560" y="154" width="250" height="32" rx="8" fill="#0F80CC"/>
+        <text class="b2aT" x="574" y="175">customers.city</text>
+        <rect x="560" y="196" width="250" height="32" rx="8" fill="#F8F5FE" stroke="#DDD0F7" stroke-dasharray="6 4"/>
+        <text class="b2aG" x="574" y="217">users table ? (Q3)</text>
+        <path class="b2aArr" d="M240,179 L556,171"/>
+        <path class="b2aBad" d="M240,191 L556,211"/>
+        <rect x="40" y="258" width="200" height="34" rx="8" fill="#003B57"/>
+        <text class="b2aT" x="54" y="280">"cancelled in March"</text>
+        <rect x="560" y="244" width="250" height="32" rx="8" fill="#0F80CC"/>
+        <text class="b2aT" x="574" y="265">subscriptions.cancel_date</text>
+        <rect x="560" y="286" width="250" height="32" rx="8" fill="#F8F5FE" stroke="#DDD0F7" stroke-dasharray="6 4"/>
+        <text class="b2aG" x="574" y="307">churn table ? (Q9)</text>
+        <path class="b2aArr" d="M240,269 L556,261"/>
+        <path class="b2aBad" d="M240,281 L556,301"/>
+        <text class="b2aX" x="40" y="346">Solid arrow = with schema linking. Dashed = the naive model's guess: fluent, plausible, nonexistent.</text>
+        <rect x="40" y="362" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b2aN" x="64" y="374">81.2% of 4,602 failed queries in a published error analysis were schema errors - lever #1 by a mile.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - question phrases either land on real Daybreak objects or on ghosts the model invented</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The 81.2% stat, unpacked<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>A published error analysis dissected <strong>4,602 failed text-to-SQL queries</strong> and asked: what actually went wrong? The answer was lopsided: <strong>81.2% were schema errors</strong> - the model picked the wrong column, or mapped the question's meaning onto the wrong objects entirely (the paper's two buckets: wrong column selection and semantic misinterpretation).</p>
+        <ul>
+          <li><strong>Not syntax.</strong> Modern LLMs write grammatical SQL almost every time. The SQL parses fine - it just points at the wrong things.</li>
+          <li><strong>Two flavors of schema error.</strong> Invent an object that does not exist (loud - the database refuses), or pick a real object that means the wrong thing (silent - it runs). Tonight kills the first flavor.</li>
+          <li><strong>Why it dominates:</strong> the question is written in business language and the schema is written in engineer language. Nothing in a raw CREATE TABLE dump bridges the two.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Schema vocabulary vs business vocabulary<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Look at the ghosts in the diagram: <code>subscription_tier</code>, <code>users</code>, <code>churn</code>. None are random. Each is the <em>business</em> word from the question, dressed up as a database object. "Churn" is a real concept at Daybreak - it just is not a table; it is a rule about <code>cancel_date</code>. That gap between the words your org speaks and the names your schema uses is where most text-to-SQL failures live, and you will meet it again in b4 (docs carry the vocabulary) and b5 (a semantic layer defines it).</p>
+        <p>Quick exercise for your own warehouse: say ten common stakeholder questions out loud and note which nouns have an obvious column home and which are pure business vocabulary. The second list is a preview of your failure log.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: HOW REAL SYSTEMS DO IT ============ -->
+  <section class="section" id="how">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers ACM CSUR taxonomy + Genie guidance</span>
+      <h2>How real systems link schemas <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">You cannot paste a 1,000-column enterprise schema into a prompt and call it linking. Real systems treat schema linking as an explicit stage: <strong>retrieve the tables and columns relevant to this question</strong> - by string matching, by embedding similarity, or both - and put only those in front of the model.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Prompt-all-tables strategy versus retrieve-a-relevant-subset strategy">
+        <style>
+          .b2bT { font: 700 13px Inter, sans-serif; fill: #FFFFFF; }
+          .b2bH { font: 700 14px Inter, sans-serif; fill: #10222E; }
+          .b2bC { font: 400 11.5px Inter, sans-serif; fill: #10222E; }
+          .b2bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b2bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b2bArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b2bh1); }
+        </style>
+        <defs>
+          <marker id="b2bh1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b2bH" x="30" y="30">Strategy A - prompt everything</text>
+        <rect x="30" y="46" width="88" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="40" y="61">customers</text>
+        <rect x="126" y="46" width="88" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="136" y="61">orders</text>
+        <rect x="222" y="46" width="88" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="232" y="61">products</text>
+        <rect x="318" y="46" width="88" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="328" y="61">events</text>
+        <rect x="30" y="76" width="88" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="40" y="91">order_items</text>
+        <rect x="126" y="76" width="88" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="136" y="91">subscriptions</text>
+        <rect x="222" y="76" width="88" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="232" y="91">+ 24 more...</text>
+        <path class="b2bArr" d="M200,104 L200,132"/>
+        <rect x="80" y="136" width="250" height="40" rx="8" fill="#003B57"/>
+        <text class="b2bT" x="94" y="161">One giant prompt · every table</text>
+        <path class="b2bArr" d="M200,180 L200,208"/>
+        <rect x="80" y="212" width="250" height="40" rx="8" fill="#7C3AED"/>
+        <text class="b2bT" x="94" y="237">LLM - swimming in distractors</text>
+        <text class="b2bX" x="30" y="286">Every irrelevant table is bait for a</text>
+        <text class="b2bX" x="30" y="304">wrong pick. Bigger context, worse odds.</text>
+        <text class="b2bH" x="470" y="30">Strategy B - retrieve a subset</text>
+        <rect x="470" y="46" width="170" height="34" rx="8" fill="#003B57"/>
+        <text class="b2bT" x="484" y="68">"Pro plan?"</text>
+        <path class="b2bArr" d="M644,63 L688,63"/>
+        <rect x="692" y="46" width="160" height="34" rx="8" fill="#7C3AED"/>
+        <text class="b2bT" x="706" y="68">Schema retriever</text>
+        <path class="b2bArr" d="M772,84 L772,110"/>
+        <rect x="600" y="114" width="120" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="610" y="129">customers ✓</text>
+        <rect x="732" y="114" width="120" height="22" rx="5" fill="#9FCFEE"/><text class="b2bC" x="742" y="129">subscriptions ✓</text>
+        <path class="b2bArr" d="M726,144 L726,170"/>
+        <rect x="600" y="174" width="252" height="40" rx="8" fill="#0F80CC"/>
+        <text class="b2bT" x="614" y="199">Small prompt · 2 relevant tables</text>
+        <path class="b2bArr" d="M726,218 L726,244"/>
+        <rect x="600" y="248" width="252" height="40" rx="8" fill="#7C3AED"/>
+        <text class="b2bT" x="614" y="273">LLM - focused on what matters</text>
+        <rect x="30" y="318" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b2bN" x="54" y="330">Databricks Genie allows 30 tables per space but recommends 5 or fewer - vendors learned this the hard way.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - prompt-all vs retrieve-a-subset: the tradeoff every production system settles</figcaption>
+    </figure>
+
+    <div class="prompt-box">
+      <span class="label">DaybreakGPT rung 1 - the schema-linked prompt for Q2</span>
+You are a SQL expert. Given these RELEVANT tables (selected by the
+schema linker for this question), write one SQLite query.
+Use ONLY the tables and columns listed. Return only SQL.
+
+CREATE TABLE customers (customer_id INTEGER PRIMARY KEY, name TEXT,
+  city TEXT, country TEXT, signup_date TEXT, plan TEXT);
+-- column note: plan holds the tier name, e.g. 'Pro'
+
+Question: How many customers are on the Pro plan?
+    </div>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>Retrieval beats dumping - and the field made it a named stage<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>The peer-reviewed technique taxonomies (ACM Computing Surveys and the survey line this course follows) treat schema linking as its own pre-processing stage, and the best-known named methods all implement it explicitly: <strong>C3</strong> ranks and filters candidate tables and columns before generation, <strong>DIN-SQL</strong> makes schema linking the first module of its decomposed pipeline, and <strong>CHESS</strong> runs dedicated retrieval over schema plus context before its generator ever sees the question.</p>
+        <ul>
+          <li><strong>String retrieval:</strong> match question tokens against table/column names and synonyms. Cheap, surprisingly strong on well-named schemas.</li>
+          <li><strong>Embedding retrieval:</strong> embed the question and every schema element; take the nearest. Catches "city" → <code>customers.city</code> even when phrasing drifts.</li>
+          <li><strong>The tradeoff:</strong> retrieve too little and the right column is missing (guaranteed failure); retrieve too much and you are back to strategy A. Production systems tune k on a golden set - which you own since b1.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>Databricks' own Genie numbers make the case.</strong> Their published curation guidance caps a Genie space at 30 Unity Catalog tables but recommends 5 or fewer, and their worked example shows a fresh, uncurated space scoring 8 of 15 benchmark questions - rising to 15 of 15 after curators trimmed scope and added metadata. Vendor-reported figures on a vendor benchmark, so hold them loosely - but notice the direction: the fix was less context, better chosen. That is schema linking as product policy.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: LOUD FAILURES DIE FIRST ============ -->
+  <section class="section" id="loud">
+    <div class="section-kicker">
+      <span class="klabel">Part 3</span>
+      <h2>Loud failures die first - and what that exposes <span class="tag concept">5 min live</span></h2>
+    </div>
+    <p class="lede">Every hallucinated object on the golden set is a schema-linking casualty, and they all fail loud: SQLite refuses to run SQL against tables that do not exist. Tonight's lever kills them. But watch what happens to the questions with a second problem hiding underneath.</p>
+    <table class="clean">
+      <thead><tr><th>Question</th><th>Naive ghost (b1)</th><th>After schema linking (tonight)</th></tr></thead>
+      <tbody>
+        <tr><td>Q2 · Pro-plan customers</td><td><code>subscription_tier</code> column - loud error</td><td>✓ Correct</td></tr>
+        <tr><td>Q3 · City with most customers</td><td><code>users</code> table - loud error</td><td>✓ Correct</td></tr>
+        <tr><td>Q9 · Subs cancelled in March</td><td><code>churn</code> table - loud error</td><td>✗ Silent: counts cancelled <em>orders</em>, not subscriptions</td></tr>
+        <tr><td>Q4 · Total revenue</td><td><code>orders.amount</code> column - loud error</td><td>✗ Silent: includes cancelled and pending orders</td></tr>
+      </tbody>
+    </table>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>Why fixing a layer exposes the next one<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>This is the course's recurring plot twist, so meet it properly the first time. Q4's naive failure was a ghost column - loud, honest, obviously broken. Give the model the real schema and it now writes fluent SQL over real objects... that ignores the business rule that revenue means delivered orders only. The error did not disappear; it <em>descended a layer</em> - from names (schema) to meaning (semantics) - and went quiet on the way down.</p>
+        <p>That is why this track is a ladder, not a single trick: each lever fixes its own layer and hands the survivors to the next. Names → patterns (b3) → vocabulary (b4) → definitions (b5) → recovery (b6). If your accuracy bar ever jumps and your remaining failures all go silent, you have not finished - you have found the next session.</p>
+      </div>
+    </details>
+    <div class="callout tip">
+      <strong>See the ground truth yourself</strong>
+      The whole fight is over what tables actually exist. Ask SQLite directly - this is the list the naive model never saw, and the reason its ghosts died loudly.
+    </div>
+    <div class="sqlbox" data-caption="The six real Daybreak tables - no users, no churn, no subscription_tier anywhere. Try SELECT * FROM churn; to hear a loud failure yourself.">
+      <pre class="sql-src">SELECT name AS real_tables
+FROM sqlite_master
+WHERE type = 'table'
+ORDER BY name;</pre>
+    </div>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Toggle the lever, watch the ghosts die <span class="tag demo">★ 14 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">DaybreakGPT below has exactly one lever: schema linking, currently OFF. Break it first, fix it second, then find the trap door.</p>
+
+    <div class="steps">
+      <div class="step"><p>With the lever OFF, ask <strong>Q2</strong> (Pro plan). Loud failure: <code>subscription_tier</code> does not exist and SQLite says so.</p></div>
+      <div class="step"><p>Still OFF, ask <strong>Q3</strong> (which city). Another ghost - a <code>users</code> table. Two for two on hallucinations.</p></div>
+      <div class="step"><p>Toggle <strong>Schema linking ON</strong> and re-ask Q2 and Q3. Both flip to ✓ - the mapping was the whole problem.</p></div>
+      <div class="step"><p>Lever still ON, ask <strong>Q4</strong> and <strong>Q9</strong>. No error this time... and still wrong. Read each "Why" note: the failure fell through to the meaning layer and went <strong>silent</strong>. Fixing one layer exposed the next.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="schema" data-on="" data-q="2,3,9,4"></div>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>Re-run the golden set <span class="tag demo">★ 6 min · measure the climb</span></h2>
+    </div>
+    <p class="lede">Same 12 questions as b1, one lever on. Run it and compare against the baseline number you wrote down last week.</p>
+
+    <div class="t2s" data-mode="scorecard" data-levers="schema" data-on="schema"></div>
+
+    <div class="callout win">
+      <strong>★ The number tonight</strong>
+      3 of 12 - 25%, up from 8%. One lever tripled the score, which is exactly what the research predicts when 81% of failures are schema errors. Now look at the misses in the list: not one database error left. Every remaining failure runs clean and returns a wrong number. The scoreboard improved and the danger profile got worse - keep that thought for b5.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 20-30 min total</span></h2>
+    </div>
+    <ul>
+      <li>Run all four demo questions with the lever off, then on. Before reading each "Why" note, call the failure: loud or silent? You should go four for four by the end.</li>
+      <li>In the live SQL editor, run the <code>sqlite_master</code> query, then deliberately query a ghost (<code>SELECT * FROM churn;</code>) and read the error message word for word - that message becomes raw material for self-correction in b6.</li>
+      <li>Take the naive Q2 SQL (<code>WHERE subscription_tier = 'Pro'</code>) and repair it by hand against the real schema. Notice how trivial the fix is once <em>you</em> do the linking.</li>
+      <li>For a database you know at work: write down ten common question phrases and sort them - obvious column home vs business vocabulary with no home. The second pile predicts your b4 and b5 workload.</li>
+      <li>Optional reading: the schema-linking sections of the ACM Computing Surveys taxonomy (DOI 10.1145/3737873) - skim how C3, DIN-SQL, and CHESS each make linking an explicit stage.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This course distills the current research and market evidence into runnable sessions; papers and vendor docs stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Error-analysis study: 4,602 failed queries dissected</span><span class="note">Part 1 · the 81.2% schema-error headline; the silent flavor returns in b5</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">ACM Computing Surveys techniques taxonomy (10.1145/3737873)</span><span class="note">Part 2 · schema linking as an explicit pre-processing stage: C3, DIN-SQL, CHESS</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Databricks Genie curation guidance</span><span class="note">Part 2 · the 5-or-fewer-tables recommendation; the full curation-tax story lives in a4 and b10</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">1 · A published error analysis dissected 4,602 failed text-to-SQL queries. What did it find?</p>
+      <button class="qopt" type="button">A · 81.2% were schema errors - wrong column selection or the question's meaning mapped to the wrong objects</button>
+      <button class="qopt" type="button">B · Most failures were SQL syntax errors the models could not avoid</button>
+      <button class="qopt" type="button">C · Failures were spread evenly across syntax, schema, and logic</button>
+      <p class="qwhy">The distribution is lopsided: 81.2% schema errors (wrong column selection plus semantic misinterpretation). Modern LLMs write grammatical SQL - it just points at the wrong things. That is why schema linking is lever #1.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">2 · Genie allows 30 tables per space but Databricks recommends 5 or fewer. Why would less context beat more?</p>
+      <button class="qopt" type="button">A · Fewer tables means cheaper prompts, and cost is the main concern</button>
+      <button class="qopt" type="button">B · Every irrelevant table is a distractor - context bloat invites wrong picks, so a well-chosen subset beats dumping everything</button>
+      <button class="qopt" type="button">C · The model has a hard token limit that 30 tables always exceeds</button>
+      <p class="qwhy">The point is precision, not cost: each extra table offers plausible-but-wrong columns to grab. Retrieval of a small relevant subset is schema linking; prompting everything is the naive baseline wearing a bigger prompt.</p>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">3 · After tonight, Q4 (total revenue) runs without error but silently includes cancelled orders. What does that tell you?</p>
+      <button class="qopt" type="button">A · Schema linking failed on Q4 and needs better retrieval</button>
+      <button class="qopt" type="button">B · The golden set is mislabeled - a running query should count as correct</button>
+      <button class="qopt" type="button">C · Schema linking fixes names, not meaning - business rules like "revenue = delivered only" belong to a later layer (the semantic layer, b5)</button>
+      <p class="qwhy">The SQL uses only real, correctly linked objects - the mapping is perfect. What is missing is a definition no schema carries. Fixing one layer exposes the next, and the exposed failures are the silent kind.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 2 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Schema linking</b><span>Map question phrases to real tables/columns before generation. The first and biggest context lever.</span></div>
+      <div class="cheat-item"><b>The stat</b><span>81.2% of 4,602 analyzed failures were schema errors - wrong columns picked or meaning mis-mapped.</span></div>
+      <div class="cheat-item"><b>Ghosts</b><span>Business words dressed as objects: subscription_tier, users, churn. They fail loud - the honest kind.</span></div>
+      <div class="cheat-item"><b>Retrieve, don't dump</b><span>String or embedding retrieval of relevant tables. Irrelevant tables are distractors, not backup.</span></div>
+      <div class="cheat-item"><b>Vendor echo</b><span>Genie: 30 tables allowed, 5 or fewer recommended. Less context, better chosen, wins.</span></div>
+      <div class="cheat-item"><b>Named methods</b><span>C3, DIN-SQL, CHESS all run schema linking as an explicit stage before generating SQL.</span></div>
+      <div class="cheat-item"><b>The limit</b><span>Linking fixes names, not meaning. Q4 and Q9 now fail silently - that is b5's job.</span></div>
+      <div class="cheat-item"><b>The ladder</b><span>8% → 25% (3/12) with one lever. Next rung: b3 few-shot examples - teach patterns by showing.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 2 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="../index.html">← All sessions</a> &nbsp;·&nbsp; <a href="b1-baseline-agent.html">← Prev: Meet the problem</a> &nbsp;·&nbsp; <a href="b3-few-shot-examples.html">Next: Few-shot examples →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

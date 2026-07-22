@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leader session 3 · The vendor landscape - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Leader session 3 of 6</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Leader track · Session 3 of 6</div>
+    <h1>The vendor landscape: <span class="accent">buying without getting sold</span></h1>
+    <p class="sub">Every warehouse and BI vendor now ships a chat-with-your-data feature, and every one of them quotes a 90%-plus accuracy number. This session hands you the map - the two warehouse-native flagships, the BI copilots, the AI analysts, the open-source platforms - and the one habit that survives every sales pitch: never accept a vendor's benchmark, run your own.</p>
+    <div class="chip-row">
+      <span class="chip level">🟡 Leader track</span>
+      <span class="chip audience">Execs · data leaders · PMs</span>
+      <span class="chip audience">No code needed</span>
+      <span class="chip time">45 min</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Framing</span>
+      <span class="a2" style="flex:4">3-20 · Genie vs Cortex</span>
+      <span class="a3" style="flex:4">20-40 · The wider field + buying questions</span>
+      <span class="a4" style="flex:1">40-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Part 0</span>
+      <h2>The buy-side session</h2>
+    </div>
+    <p class="lede">You will not build a text-to-SQL system - you will buy one, or approve someone who does. That makes your job vendor triage: seeing past demo polish and non-comparable benchmarks to the two questions that actually predict success - where does the data go, and who pays the curation tax (session a4). This session gives you the landscape and the bake-off discipline to choose well.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill inkpill">Sources covered</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      A working map of the 2026 text-to-SQL market by category, a clear read on how the two flagships (Databricks Genie, Snowflake Cortex Analyst) actually differ, why every vendor accuracy number is non-comparable, and a five-line RFP bake-off you can hand your team this week.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE TWO FLAGSHIPS ============ -->
+  <section class="section" id="flagships">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Genie vs Cortex Analyst head-to-heads</span>
+      <h2>The two warehouse-native flagships <span class="tag concept">9 min live</span></h2>
+    </div>
+    <p class="lede">If your data already lives in Databricks or Snowflake, the default choice is that platform's native tool - the data never leaves, and governance comes along for free. Here is how the two leaders actually differ under the marketing.</p>
+
+    <table class="clean">
+      <thead><tr><th>&nbsp;</th><th>Databricks AI/BI Genie</th><th>Snowflake Cortex Analyst</th></tr></thead>
+      <tbody>
+        <tr><td><strong>How it grounds</strong></td><td>Curated "rooms": Unity Catalog metadata + plain-text curator instructions + example queries</td><td>A semantic model in YAML - "the magic is in the YAML"</td></tr>
+        <tr><td><strong>Pricing shape</strong></td><td>No per-question AI charge; you pay for the SQL warehouse</td><td>Per message processed, plus warehouse cost</td></tr>
+        <tr><td><strong>Data boundary</strong></td><td>Databricks-resident; external data needs federation</td><td>Never leaves Snowflake; row-level security intact</td></tr>
+        <tr><td><strong>Operational limits</strong></td><td>Up to 30 tables/space, recommends 5 or fewer; 20 questions/min; nondeterministic</td><td>Grounded in semantic views; quality tracks how well the YAML is written</td></tr>
+        <tr><td><strong>Vendor accuracy claim</strong></td><td>32% to 90%+ on an internal benchmark (May 2026)</td><td>90%+ vs 51% single-shot GPT-4o on a 150-question internal benchmark (Aug 2024)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout tip">
+      <strong>Read those last two numbers as marketing, not measurement</strong>
+      Both claims come from each vendor's own internal benchmark, on their own data, with their own scoring. They are not comparable to each other and not predictive of your results. Treat every "90%+" as "90%+ on questions they chose."
+    </div>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The one thing both have in common: heavy curation<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>Neither tool works out of the box, and both vendors quietly admit it. A fresh Genie space was reported to score <strong>8/15 (53%)</strong> before systematic remodeling brought it to 15/15. Cortex Analyst's accuracy lives or dies on the quality of the YAML semantic model a human writes. The tool is the cheap part - the metadata and metric definitions are the real project, which is exactly session a4's curation tax.</p>
+        <ul>
+          <li><strong>Genie's own recipe:</strong> 3-7 tables per room, 3-5 trusted example queries, roughly two weeks of iteration before it is trustworthy.</li>
+          <li><strong>Cortex's lever:</strong> the semantic model. A rich, correct YAML is where the 90% claim comes from; a thin one lands far lower.</li>
+          <li><strong>Both degrade</strong> on open-ended questions that diverge from the curated examples - the demo questions always look great, the eleventh novel question often does not.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>"We already pay for Snowflake, so Cortex is free."</strong> A common and expensive misread. The licence may be bundled, but the person-months your data team spends writing and maintaining the semantic model are the actual cost - and they recur every time the schema changes. The tool decision is easy; the curation commitment is the real budget line, and it belongs in the business case up front.</p>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 2: THE WIDER FIELD ============ -->
+  <section class="section" id="field">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers the 12-platform comparison landscape</span>
+      <h2>The wider field, by category <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Beyond the two warehouse flagships, the market splits into three more categories. Knowing which box a vendor is in tells you more than any feature list, because the box determines the governance and accuracy trade-offs.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four categories of text-to-SQL tools: warehouse-native, BI copilots, AI analysts, open-source">
+        <style>
+          .a3fT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .a3fC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .a3fX { font: 400 11px Inter, sans-serif; fill: #526472; }
+          .a3fN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+        </style>
+        <rect x="30" y="50" width="400" height="24" rx="6" fill="#003B57"/>
+        <text class="a3fT" x="44" y="67">Warehouse-native</text>
+        <rect x="30" y="74" width="400" height="90" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="a3fC" x="44" y="98">Databricks Genie · Snowflake Cortex Analyst</text>
+        <text class="a3fX" x="44" y="120">Data stays put, governance inherited.</text>
+        <text class="a3fX" x="44" y="140">Best when your warehouse is already chosen.</text>
+        <rect x="450" y="50" width="400" height="24" rx="6" fill="#0F80CC"/>
+        <text class="a3fT" x="464" y="67">BI copilots</text>
+        <rect x="450" y="74" width="400" height="90" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="a3fC" x="464" y="98">Power BI Copilot · Tableau · Looker+Gemini</text>
+        <text class="a3fC" x="464" y="118">Qlik · ThoughtSpot Spotter · Amazon Q</text>
+        <text class="a3fX" x="464" y="140">Chat bolted onto the BI tool you own.</text>
+        <rect x="30" y="180" width="400" height="24" rx="6" fill="#3DA0E3"/>
+        <text class="a3fT" x="44" y="197">AI analysts</text>
+        <rect x="30" y="204" width="400" height="90" fill="#E9F4FB" stroke="#9FCFEE"/>
+        <text class="a3fC" x="44" y="228">Hex Magic · Julius · Mode · Deepnote · Tellius</text>
+        <text class="a3fX" x="44" y="250">Fast, flexible. Watch governance: some</text>
+        <text class="a3fX" x="44" y="270">(Julius-style) bypass row-level security.</text>
+        <rect x="450" y="180" width="400" height="24" rx="6" fill="#7C3AED"/>
+        <text class="a3fT" x="464" y="197">Open-source platforms</text>
+        <rect x="450" y="180" width="400" height="0"/>
+        <rect x="450" y="204" width="400" height="90" fill="#F8F5FE" stroke="#DDD0F7"/>
+        <text class="a3fC" x="464" y="228">WrenAI (active) · Vanna (archived Mar 2026)</text>
+        <text class="a3fX" x="464" y="250">Build/host yourself. Even the most-starred</text>
+        <text class="a3fX" x="464" y="270">OSS player pivoted commercial - watch churn.</text>
+        <rect x="30" y="312" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="a3fN" x="52" y="324">The category sets the governance story. Ask which box a vendor is in before any feature demo.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the 2026 text-to-SQL market in four boxes</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The gotchas hiding in each category<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>BI copilots</strong> inherit your existing semantic model if you have one (a Looker or Power BI dataset) - which is a genuine head start, but also means their accuracy is capped by how good that model already is.</li>
+          <li><strong>AI analysts</strong> like Hex Magic index your warehouse schema and notebook context but, per practitioner reports, still hallucinate join keys on messy schemas. Julius-style CSV tools run Python in a sandbox with no governance and no row-level security - convenient and a shadow-IT risk. Querio is a data point on price: reported at roughly $14k/year.</li>
+          <li><strong>Open-source</strong> gives control and no per-seat fee, at the cost of you hosting and maintaining it - and market volatility is real: Vanna, the most-starred OSS framework (~23.8k stars), archived its repo in March 2026 and pivoted to a commercial cloud. WrenAI remains active with a governance-focused platform.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Guided exercise</span>
+      <h2>Draft your five-line bake-off <span class="tag demo">★ 10 min · with your team</span></h2>
+    </div>
+    <p class="lede">The single most valuable thing you can do before signing anything: refuse the vendor's benchmark and run your own head-to-head on your own data. Here is the whole protocol - five lines, and it beats any analyst report.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>Pick 20 real questions</strong> your business actually asks - pulled from the BI backlog, including the ambiguous-metric ones ("revenue" - gross or delivered?).</p></div>
+      <div class="step"><p><strong>Have a human write the correct SQL</strong> for each. This is your golden set, and it is reusable forever.</p></div>
+      <div class="step"><p><strong>Run all 20 on each finalist</strong> against the same warehouse, with the same curation effort budget for each.</p></div>
+      <div class="step"><p><strong>Count silent failures by hand</strong> - plausible answers that are wrong. That number, not the vendor's, is your real accuracy.</p></div>
+      <div class="step"><p><strong>Then compare curation hours and price.</strong> The cheapest tool that clears your accuracy bar with the least curation wins.</p></div>
+    </div>
+
+    <div class="callout tip">
+      <strong>Why this beats the demo</strong>
+      A vendor demo is a curated success on questions they chose. Your bake-off is an honest measurement on questions you chose. The gap between the two is exactly the risk you would otherwise carry into production - and session a5 shows why that gap is a governance problem, not just a quality one.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Questions to bring to your team <span class="tag exercise">◐ 20-30 min total</span></h2>
+    </div>
+    <ul>
+      <li>Which category are we actually shopping in - warehouse-native, BI copilot, AI analyst, or open-source? What determines it (where our data lives)?</li>
+      <li>For every vendor accuracy claim we have been shown, ask: on whose data, whose questions, whose scoring? Write down how many are comparable. (Answer: none.)</li>
+      <li>Do we have 20 real questions with human-verified SQL we could run as a bake-off? If not, that is the first deliverable, before any trial.</li>
+      <li>If we picked our warehouse's native tool, who on the data team owns the semantic model or curator instructions, and for how many hours a month?</li>
+      <li>What is our exposure if a chosen open-source tool gets archived like Vanna did - could we self-maintain, or would we be stranded?</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This session maps the 2026 commercial landscape from vendor comparisons and product documentation. Vendor claims are labeled as such throughout. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Snowflake Cortex Analyst vs Databricks Genie head-to-heads</span><span class="note">Part 1 · grounding approach, pricing, limits, curation reality</span></div>
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Vanna archived March 2026 (verified against GitHub)</span><span class="note">Part 2 · open-source market volatility as a buying risk</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">12-platform NL-to-SQL comparison landscape</span><span class="note">Part 2 · BI copilots + AI analysts categories; vendor-published</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">Genie 8/15 to 15/15 curation case</span><span class="note">Part 1 · nothing works out of the box; full curation tax in a4</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Two vendors both claim "90%+ accuracy." How should a leader read that?</p>
+      <button class="qopt" type="button">A · Whichever number is higher wins the evaluation</button>
+      <button class="qopt" type="button">B · They are directly comparable since both measure accuracy</button>
+      <button class="qopt" type="button">C · Non-comparable - each is on its own data, questions, and scoring; only your own bake-off predicts your results</button>
+      <p class="qwhy">Genie's 32%-to-90% and Cortex's 90%-vs-51% both come from separate internal benchmarks. They cannot be compared to each other or to your environment. Run your own golden set.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · What is the core difference in how Genie and Cortex Analyst ground their answers?</p>
+      <button class="qopt" type="button">A · Genie uses curated rooms (Unity Catalog metadata + instructions + examples); Cortex uses a YAML semantic model</button>
+      <button class="qopt" type="button">B · Genie fine-tunes a model; Cortex uses raw schema only</button>
+      <button class="qopt" type="button">C · There is no real difference; both are the same product</button>
+      <p class="qwhy">Both are curation-first, but the shape differs: Genie curator instructions and example queries versus Cortex's YAML semantic model ("the magic is in the YAML"). Either way, a human writes the context.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · What is the one thing to demand in any vendor evaluation?</p>
+      <button class="qopt" type="button">A · A lower per-message price</button>
+      <button class="qopt" type="button">B · A bake-off on your own golden set and your own data, with silent failures counted by hand</button>
+      <button class="qopt" type="button">C · A longer free trial period</button>
+      <p class="qwhy">Your own golden set is the only benchmark that predicts your results. Counting silent failures by hand surfaces the plausible-but-wrong answers a demo hides - the real risk.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Leader session 3 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>Four categories</b><span>Warehouse-native · BI copilots · AI analysts · open-source. The box sets the governance story.</span></div>
+      <div class="cheat-item"><b>Genie</b><span>Curated rooms, Unity Catalog metadata, no per-question charge, 5-or-fewer tables, nondeterministic.</span></div>
+      <div class="cheat-item"><b>Cortex Analyst</b><span>YAML semantic model, per-message pricing, data + RLS stay in Snowflake.</span></div>
+      <div class="cheat-item"><b>Vendor benchmarks</b><span>Always non-comparable - own data, own questions, own scoring. Read "90%+" as marketing.</span></div>
+      <div class="cheat-item"><b>Nothing works OOTB</b><span>Fresh Genie space 8/15 before remodeling. The curation is the real project (a4).</span></div>
+      <div class="cheat-item"><b>AI analyst risk</b><span>Some (Julius-style) bypass row-level security - shadow-IT exposure.</span></div>
+      <div class="cheat-item"><b>OSS volatility</b><span>Vanna (~23.8k stars) archived Mar 2026, went commercial. Plan for maintenance churn.</span></div>
+      <div class="cheat-item"><b>The bake-off</b><span>20 real questions, human-verified SQL, same warehouse, count silent failures, then price.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Leader session 3 of 6 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="a2-accuracy-cliff.html">← Prev: The accuracy cliff</a> &nbsp;·&nbsp; <a href="a4-curation-tax.html">Next: The curation tax →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>

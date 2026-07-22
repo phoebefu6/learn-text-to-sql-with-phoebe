@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder session 7 · Multi-candidate generation - learn text-to-sql with phoebe</title>
+<link rel="stylesheet" href="../assets/style.css?v=1">
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="wrap">
+    <span class="crumb"><a href="../index.html">learn-text-to-sql-with-phoebe</a> / Builder session 7 of 10</span>
+    <button class="btn" id="toggle-all" type="button">Expand all</button>
+    <button class="btn primary" id="zoom-toggle" type="button">Projector zoom: off</button>
+  </div>
+</div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Learn Text-to-SQL with Phoebe · Builder track · Session 7 of 10</div>
+    <h1>Multi-candidate generation: <span class="accent">ask the model ten times</span></h1>
+    <p class="sub">Real LLMs are nondeterministic - ask the same question twice, get different SQL. Tonight you learn the production trick that turns that flaw into an asset: generate N candidate queries, execute them all, score or vote, return the best. It is how Salesforce reports climbing from roughly 50% to roughly 80% efficacy, and it needs no new context lever at all - just more shots on goal and a way to pick.</p>
+    <div class="chip-row">
+      <span class="chip level">🟢 Builder track</span>
+      <span class="chip audience">Practitioners: analysts · DE · DS · AI engineers</span>
+      <span class="chip audience">Runs in your browser · SQLite + simulated model</span>
+      <span class="chip time">Pattern session · after b6</span>
+    </div>
+    <div class="agenda">
+      <span class="a1" style="flex:1">0-3 · Recap</span>
+      <span class="a2" style="flex:4">3-18 · The trick &amp; how to pick a winner</span>
+      <span class="a3" style="flex:5">18-42 · Build-along: two roads, one answer</span>
+      <span class="a4" style="flex:1">42-45 · Q&amp;A</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ INTRO ============ -->
+  <section class="section" id="intro">
+    <div class="section-kicker">
+      <span class="klabel">Session 7</span>
+      <h2>A pattern, not a lever</h2>
+    </div>
+    <p class="lede">The ladder is climbed: schema → examples → RAG → semantic layer → self-correction took our golden set from 8% to 100%. Tonight adds <strong>no new simulator lever</strong>, because multi-candidate generation is not more context - it is a different way to spend compute on top of whatever context you have. Our 12-question set is saturated, so we teach the pattern conceptually on the full stack; real question sets are never saturated, which is exactly where this pattern earns its money.</p>
+    <div class="legend">
+      <span class="pill solid">Live - presented in session</span>
+      <span class="pill light">Self-study - read after class</span>
+      <span class="pill ai">🤖 Simulated model - deterministic, for teaching</span>
+      <span class="pill peach">▶ Live SQL - editable &amp; runnable</span>
+    </div>
+    <div class="callout win">
+      <strong>★ What you walk out with today</strong>
+      The generate-N, execute-all, pick-one pattern and the Salesforce production story behind it (vendor-reported 50% → 80% with 10 candidates), three selection strategies ranked by cost (execution filter, self-consistency majority vote, LLM-as-judge), the cost math that decides when N candidates are worth N times the tokens - and hands-on proof that two different SQL shapes can be equally correct.
+    </div>
+    <div class="callout ai">
+      <strong>🤖 Simulation honesty</strong>
+      Our playground model is deterministic - the same question always yields the same SQL - precisely the property real LLMs lack. So tonight's demos use the simulator for ground truth and your own hands for the variation: you will write the second candidate yourself and vote between real executed result sets. The scattering behavior we describe is documented in the sources, not simulated here.
+    </div>
+  </section>
+
+  <!-- ============ PART 1: THE TRICK ============ -->
+  <section class="section" id="trick">
+    <div class="section-kicker">
+      <span class="klabel">Part 1 · covers Salesforce case, CHASE-SQL</span>
+      <h2>The trick: N shots, one winner <span class="tag concept">8 min live</span></h2>
+    </div>
+    <p class="lede">Sample the model several times at nonzero temperature and the correct answers tend to <strong>converge</strong> - different SQL text, same result set - while the mistakes <strong>scatter</strong>: each wrong candidate tends to be wrong its own way. Execute everything, group by result, and the truth usually forms the biggest cluster. Nondeterminism, the thing demo audiences fear most, becomes the raw material of reliability.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One question fans out to N candidate SQL queries, all execute, a scorer picks the winner">
+        <style>
+          .b7aT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b7aS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .b7aC { font: 400 12px Inter, sans-serif; fill: #10222E; }
+          .b7aX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b7aN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b7aArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b7ah); }
+        </style>
+        <defs>
+          <marker id="b7ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <rect x="30" y="130" width="160" height="80" rx="10" fill="#003B57"/>
+        <text class="b7aT" x="46" y="162">One question</text>
+        <text class="b7aS" x="46" y="182">"Total revenue?"</text>
+        <rect x="270" y="30" width="200" height="50" rx="10" fill="#7C3AED"/>
+        <text class="b7aT" x="286" y="52">Candidate A</text>
+        <text class="b7aS" x="286" y="68">SUM over all lines</text>
+        <rect x="270" y="100" width="200" height="50" rx="10" fill="#7C3AED"/>
+        <text class="b7aT" x="286" y="122">Candidate B</text>
+        <text class="b7aS" x="286" y="138">join + delivered filter</text>
+        <rect x="270" y="170" width="200" height="50" rx="10" fill="#7C3AED"/>
+        <text class="b7aT" x="286" y="192">Candidate C</text>
+        <text class="b7aS" x="286" y="208">subquery per order</text>
+        <rect x="270" y="240" width="200" height="50" rx="10" fill="#7C3AED"/>
+        <text class="b7aT" x="286" y="262">Candidate D</text>
+        <text class="b7aS" x="286" y="278">CTE, same filter</text>
+        <rect x="540" y="30" width="130" height="50" rx="10" fill="#0F80CC"/>
+        <text class="b7aT" x="554" y="52">→ 4187.50</text>
+        <text class="b7aS" x="554" y="68">runs fine</text>
+        <rect x="540" y="100" width="130" height="50" rx="10" fill="#0F80CC"/>
+        <text class="b7aT" x="554" y="122">→ 3245.75</text>
+        <text class="b7aS" x="554" y="138">runs fine</text>
+        <rect x="540" y="170" width="130" height="50" rx="10" fill="#0F80CC"/>
+        <text class="b7aT" x="554" y="192">→ error</text>
+        <text class="b7aS" x="554" y="208">dropped</text>
+        <rect x="540" y="240" width="130" height="50" rx="10" fill="#0F80CC"/>
+        <text class="b7aT" x="554" y="262">→ 3245.75</text>
+        <text class="b7aS" x="554" y="278">runs fine</text>
+        <rect x="730" y="130" width="120" height="80" rx="10" fill="#3DA0E3"/>
+        <text class="b7aT" x="744" y="162">Winner</text>
+        <text class="b7aS" x="744" y="182">3245.75</text>
+        <text class="b7aS" x="744" y="198">2-vote cluster</text>
+        <path class="b7aArr" d="M190,150 L268,60"/>
+        <path class="b7aArr" d="M190,165 L268,125"/>
+        <path class="b7aArr" d="M190,180 L268,195"/>
+        <path class="b7aArr" d="M190,195 L268,262"/>
+        <path class="b7aArr" d="M470,55 L538,55"/>
+        <path class="b7aArr" d="M470,125 L538,125"/>
+        <path class="b7aArr" d="M470,195 L538,195"/>
+        <path class="b7aArr" d="M470,265 L538,265"/>
+        <path class="b7aArr" d="M670,140 L728,155"/>
+        <path class="b7aArr" d="M670,250 L728,190"/>
+        <text class="b7aX" x="30" y="322">Correct candidates converge on one result set; mistakes scatter. Group by result, biggest cluster wins.</text>
+        <rect x="30" y="338" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b7aN" x="54" y="350">Same context stack, N samples, one vote. No new model, no new metadata - just shots on goal.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - one question fans out to N candidates; execute all, the scorer picks the winner</figcaption>
+    </figure>
+
+    <details class="card" open>
+      <summary><span class="mode live">Live</span>The production story and the research twin<span class="mini">5 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Salesforce, in production (vendor-reported).</strong> Their text-to-SQL agent launched at roughly <strong>50% efficacy</strong>. The fix that took it to roughly <strong>80%</strong> was not a bigger model or more metadata - it was generating <strong>10 candidate queries per question</strong> and scoring them. Treat the exact numbers with the usual vendor-claim caution; the shape of the move is the lesson.</li>
+          <li><strong>CHASE-SQL, in the research.</strong> The academic twin generates diverse candidates by design - its divide-and-conquer strategy decomposes the question different ways so the candidates are not ten near-clones but genuinely different attack angles - then a selection stage picks the winner. Diversity in, reliability out.</li>
+          <li><strong>Why it works.</strong> A single sample is a coin flip weighted by your context quality. N samples turn the same weighted coin into a distribution you can read. The stronger your context stack (b2-b5), the more the distribution piles onto the right answer - multi-candidate <em>amplifies</em> good context; it cannot replace it.</li>
+        </ul>
+        <div class="callout example">
+          <span class="ex-pill">Real world</span>
+          <p><strong>The 50 → 80 memo.</strong> Salesforce's engineering write-up on their production agent is unusually candid: launch efficacy around 50%, users unhappy, and the recovery plan was sampling plus scoring rather than waiting for a better model. Ten candidates per question at production scale is a real bill - and they judged it cheaper than wrong answers. That trade, vendor-reported but load-bearing, is tonight's whole session in one anecdote.</p>
+        </div>
+      </div>
+    </details>
+
+    <div class="prompt-box">
+      <span class="label">The only change to generation - sample N times instead of once</span>
+System: You are a SQL expert. Given the schema, docs &amp; examples below,
+write one SQLite query that answers the question. Return only SQL.
+
+[ ...same context stack as b2-b5: schema, examples, retrieved docs,
+  semantic definitions... ]
+
+Question: What is our total revenue from delivered orders?
+
+-- Call the model N=10 times at temperature 0.7-1.0 (not 0!).
+-- Zero temperature would return 10 identical candidates:
+-- diversity is the point. Then execute all 10 and vote.
+    </div>
+  </section>
+
+  <!-- ============ PART 2: SELECTION ============ -->
+  <section class="section" id="selection">
+    <div class="section-kicker">
+      <span class="klabel">Part 2 · covers self-consistency, execution filtering, LLM-as-judge</span>
+      <h2>Picking the winner: three selection strategies <span class="tag concept">7 min live</span></h2>
+    </div>
+    <p class="lede">Generating candidates is the easy half. The pattern lives or dies on <strong>selection</strong> - and the field has settled on three strategies you can stack, ordered here from cheapest to priciest.</p>
+
+    <figure class="zoomable">
+      <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Selection funnel: candidates pass an execution filter, then a majority vote on result sets, then an optional LLM judge tie-break">
+        <style>
+          .b7bT { font: 700 14px Inter, sans-serif; fill: #FFFFFF; }
+          .b7bS { font: 400 11.5px Inter, sans-serif; fill: #FFFFFF; opacity:.9; }
+          .b7bH { font: 700 15px Inter, sans-serif; fill: #10222E; }
+          .b7bX { font: 400 12.5px Inter, sans-serif; fill: #526472; }
+          .b7bN { font: 600 13px Inter, sans-serif; fill: #4A2E00; }
+          .b7bArr { stroke: #AEC4D2; stroke-width: 2.5; fill: none; marker-end: url(#b7bh); }
+        </style>
+        <defs>
+          <marker id="b7bh" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L8,4.5 L0,9 z" fill="#AEC4D2"/>
+          </marker>
+        </defs>
+        <text class="b7bH" x="30" y="36">The selection funnel - cheap filters first, expensive judge last</text>
+        <rect x="30" y="70" width="180" height="90" rx="10" fill="#003B57"/>
+        <text class="b7bT" x="46" y="98">10 candidates</text>
+        <text class="b7bS" x="46" y="118">raw samples from</text>
+        <text class="b7bS" x="46" y="134">the same prompt</text>
+        <rect x="270" y="70" width="180" height="90" rx="10" fill="#0F80CC"/>
+        <text class="b7bT" x="286" y="98">Execution filter</text>
+        <text class="b7bS" x="286" y="118">drop errored ones</text>
+        <text class="b7bS" x="286" y="134">10 → 8 survive</text>
+        <rect x="510" y="70" width="180" height="90" rx="10" fill="#3DA0E3"/>
+        <text class="b7bT" x="526" y="98">Majority vote</text>
+        <text class="b7bS" x="526" y="118">group by result set</text>
+        <text class="b7bS" x="526" y="134">biggest cluster wins</text>
+        <rect x="740" y="70" width="110" height="90" rx="10" fill="#7C3AED"/>
+        <text class="b7bT" x="754" y="98">Judge</text>
+        <text class="b7bS" x="754" y="118">LLM ranks</text>
+        <text class="b7bS" x="754" y="134">tie-breaks</text>
+        <path class="b7bArr" d="M210,115 L268,115"/>
+        <path class="b7bArr" d="M450,115 L508,115"/>
+        <path class="b7bArr" d="M690,115 L738,115"/>
+        <text class="b7bX" x="30" y="200">Stage 1 and 2 are free signals: the database already told you what runs and what agrees.</text>
+        <text class="b7bX" x="30" y="220">Stage 3 costs another model call - use it only when the vote ties or clusters are tiny.</text>
+        <rect x="30" y="246" width="14" height="14" rx="3" fill="#F5A623"/>
+        <text class="b7bN" x="54" y="258">Cheapest reliable signal in the field: ran without error + agrees with the most siblings.</text>
+      </svg>
+      <figcaption>🔍 Click to zoom - the selection funnel: execution filter, then majority vote, then optional judge</figcaption>
+    </figure>
+
+    <details class="card">
+      <summary><span class="mode live">Live</span>The three strategies, compared<span class="mini">4 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <table class="clean">
+          <thead><tr><th>Strategy</th><th>Signal</th><th>Cost · caveat</th></tr></thead>
+          <tbody>
+            <tr><td>Execution-based filtering</td><td>Did the query run without a database error?</td><td>Nearly free (you execute anyway). Catches loud candidates only - b6's limit applies per candidate.</td></tr>
+            <tr><td>Self-consistency (majority vote)</td><td>Group candidates by result set; return the biggest cluster's query</td><td>Free after execution. Fails when a systematic bias makes the majority wrong the same way - shared missing context lies to the vote.</td></tr>
+            <tr><td>LLM-as-judge ranking</td><td>A model scores each candidate against the question and schema</td><td>One more model call per ranking. Judges have taste but no ground truth - calibrate them, which is a whole discipline (learn-evals).</td></tr>
+          </tbody>
+        </table>
+        <p>Stack them in that order and most questions never reach the judge. Note the self-consistency caveat carefully: if all ten candidates were generated without the semantic layer, all ten may happily include cancelled orders - unanimous and wrong. The vote measures <strong>agreement</strong>, not truth. Context quality still decides what the candidates agree on.</p>
+      </div>
+    </details>
+    <details class="card">
+      <summary><span class="mode self">Self-study</span>The learn-evals bridge<span class="mini">2 min read</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <p>LLM-as-judge is not a text-to-SQL invention - it is the general evaluation pattern from the learn-evals course, pointed at candidate ranking. Everything that course teaches transfers: judges drift, judges favor verbose candidates, judges need their own golden set to be trusted. If you plan to let a judge break ties in production, first measure the judge the way b8 measures the generator. A scoring stage you have never evaluated is just a second opinion from a stranger.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ PART 3: COST ============ -->
+  <section class="section" id="cost">
+    <div class="section-kicker">
+      <span class="klabel">Part 3 · covers the cost math</span>
+      <h2>The cost reality: N of everything <span class="tag concept">4 min live</span></h2>
+    </div>
+    <p class="lede">Ten candidates means roughly <strong>10x the generation tokens</strong> and <strong>10 executions</strong> per question - every question, forever. The pattern is a dial, not a default. Where you set it is a business decision about what a wrong answer costs.</p>
+    <details class="card">
+      <summary><span class="mode live">Live</span>When N candidates are worth it - and when not<span class="mini">3 min</span><span class="caret">▶</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>Worth it:</strong> high-stakes numbers that leave the building - board metrics, finance reconciliations, anything quoted in a decision. A wrong revenue figure costs more than 10x tokens ever will. This is where Salesforce spent it.</li>
+          <li><strong>Not worth it:</strong> casual exploration, quick-look queries, an analyst iterating who will eyeball the SQL anyway. One candidate plus b6's retry loop is the right spend there.</li>
+          <li><strong>The middle path:</strong> adaptive N - one candidate by default, escalate to 5-10 when the question matches high-stakes patterns (your semantic layer already knows which metrics are governed) or when the first result fails a sanity check.</li>
+          <li><strong>Executions are not free either:</strong> on a warehouse that bills per query, 10 executions of a heavy scan is real money and real latency. Candidate SQL should hit a limited or sampled target when possible.</li>
+        </ul>
+        <div class="callout tip">
+          <strong>Our golden set is saturated - do not read tonight's 100% as the pattern's ceiling</strong>
+          On this course's 12 curated questions, the full lever stack already scores 12/12, so multi-candidate has nothing left to add here. Real question sets are never saturated: users invent question 13 daily. Multi-candidate earns its keep exactly on the residual - the questions your context stack half-covers, where one sample flips a coin and ten samples read the distribution.
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ DEMO 1 ============ -->
+  <section class="section" id="demo-1">
+    <div class="section-kicker">
+      <span class="klabel">Demo 1 of 2</span>
+      <h2>Two roads to the same number <span class="tag demo">★ 12 min · everyone builds</span></h2>
+    </div>
+    <p class="lede">Self-consistency rests on one fact: <strong>differently written SQL can be equally correct</strong> - same result set, different text. Prove it with your own hands. Golden Q6 asks for average order value; below is the subquery form. Your job: write its CTE twin, run both, and watch two shapes agree on one number. That agreement is exactly the signal a majority vote counts.</p>
+
+    <div class="callout tip">
+      <strong>Your exercise</strong>
+      Rewrite the query using a CTE: <code>WITH order_totals AS (...)</code> then select the rounded average from it. Run both versions. If your CTE twin returns the same value, you have just cast two votes for the same result set - self-consistency in miniature. (Stuck? The CTE body is the inner query, verbatim.)
+    </div>
+    <div class="sqlbox" data-caption="Gold Q6, subquery form: average order value. Write the CTE twin - WITH order_totals AS (SELECT SUM(quantity * unit_price) AS order_total FROM order_items GROUP BY order_id) SELECT ... - and confirm both return the same number.">
+      <pre class="sql-src">SELECT ROUND(AVG(order_total), 2) AS avg_order_value FROM (
+  SELECT SUM(quantity * unit_price) AS order_total
+  FROM order_items GROUP BY order_id
+);</pre>
+    </div>
+    <p class="lede">This is also why the field measures execution accuracy by <strong>result set</strong>, not SQL text (b1): a string-match metric would call your correct CTE twin a failure. Voting inherits the same principle - candidates are grouped by what they return, never by how they are written.</p>
+  </section>
+
+  <!-- ============ DEMO 2 ============ -->
+  <section class="section" id="demo-2">
+    <div class="section-kicker">
+      <span class="klabel">Demo 2 of 2</span>
+      <h2>The vote, as a thought experiment <span class="tag demo">★ 10 min · reason it out</span></h2>
+    </div>
+    <p class="lede">Our simulator is deterministic, so it cannot fan out ten noisy candidates - instead, you play the scorer. Imagine DaybreakGPT sampled four candidates for Q4 (total revenue from delivered orders) and the executed results came back as follows. Work the steps, then verify against the live playground.</p>
+
+    <div class="steps">
+      <div class="step"><p><strong>The returns:</strong> candidate A says <strong>4187.50</strong>; candidates B, C, and D all say <strong>3245.75</strong>. All four ran without error, so the execution filter keeps everything. Which number do you ship?</p></div>
+      <div class="step"><p><strong>Majority vote:</strong> group by result set - cluster {B, C, D} has three votes, {A} has one. Self-consistency says 3245.75. But a vote is evidence, not proof - so check the story behind the split.</p></div>
+      <div class="step"><p><strong>The delivered-filter check:</strong> you know this database. 4187.50 is the sum over <em>all</em> order lines - A forgot the delivered-only rule (b1's classic silent failure). B, C, D carry the WHERE clause in three different SQL shapes. Majority and domain check agree: 3245.75.</p></div>
+      <div class="step"><p><strong>Verify live:</strong> ask <strong>Q4</strong> in the playground below with the full stack on - the gold answer matches the majority cluster. Then flip the semantic lever off and ask again: you just generated candidate A yourself.</p></div>
+    </div>
+
+    <div class="t2s" data-mode="playground" data-levers="schema,examples,rag,semantic,selfcorrect" data-on="schema,examples,rag,semantic,selfcorrect"></div>
+
+    <div class="callout win">
+      <strong>★ The takeaway from the thought experiment</strong>
+      Notice what made the vote trustworthy: the majority cluster agreed <em>and</em> the minority had an explainable failure story. When all candidates share the same missing context, they can agree unanimously on the wrong number - the vote cannot save you from a context gap, only from sampling noise. Multi-candidate amplifies the stack from b2-b5; it never replaces it.
+    </div>
+  </section>
+
+  <!-- ============ HOMEWORK ============ -->
+  <section class="section" id="exercise">
+    <div class="section-kicker">
+      <span class="klabel">Homework</span>
+      <h2>Try it yourself - this week <span class="tag exercise">◐ 20-30 min total</span></h2>
+    </div>
+    <ul>
+      <li>Finish the Demo 1 exercise if you have not: write the CTE twin of gold Q6, run both, confirm the result sets match. Then write a <em>third</em> correct form (hint: join order_items to a per-order aggregate) and cast a three-vote cluster.</li>
+      <li>Break the vote on purpose: change the CTE twin so it still runs but returns a different number (drop the GROUP BY, or average line items like b3's classic mistake). You now have a 2-1 split - write one sentence on how a scorer should handle it.</li>
+      <li>Do the Demo 2 reasoning for Q11 (channel by revenue): invent four plausible candidate results where the wrong one answers "most orders" instead of "most revenue", and decide what breaks the tie if the vote splits 2-2.</li>
+      <li>Cost math: your team asks 200 questions a day, and a single candidate costs about $0.01 in tokens plus one warehouse query. Estimate the monthly delta of moving everything to N=10, then propose which question categories actually deserve it.</li>
+      <li>Optional reading: skim the CHASE-SQL abstract for the divide-and-conquer candidate strategy, and revisit the learn-evals course's LLM-as-judge session with tonight's selection funnel in mind.</li>
+    </ul>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="section" id="official">
+    <div class="section-kicker">
+      <span class="klabel">Source material</span>
+      <h2>Sources covered</h2>
+    </div>
+    <p class="lede">This session distills the multi-candidate pattern into a hands-on vote; the write-ups stay official at their links. This page covers:</p>
+    <div class="covered">
+      <div class="covered-row"><span class="status pill solid">✓</span><span class="name">Salesforce production text-to-SQL case (vendor-reported)</span><span class="note">Part 1 · launch ~50% efficacy → ~80% via 10 candidates + scoring; the numbers are the vendor's own</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">CHASE-SQL - divide-and-conquer multi-candidate generation</span><span class="note">Part 1 · diverse candidates by construction + a selection stage; the research twin of the pattern</span></div>
+      <div class="covered-row"><span class="status pill light">◐</span><span class="name">learn-evals course - LLM-as-judge and scorer calibration</span><span class="note">Part 2 · judges need their own evaluation before they can rank candidates; b8 continues the thread</span></div>
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section class="section" id="quiz">
+    <div class="section-kicker">
+      <span class="klabel">Check yourself</span>
+      <h2>Three questions before you go 🎯 <span class="tag exercise">◐ 90 seconds</span></h2>
+    </div>
+    <div class="quiz-q" data-answer="2">
+      <p class="qtext">1 · Real LLMs are nondeterministic. Why does multi-candidate generation work anyway?</p>
+      <button class="qopt" type="button">A · Because at temperature 0 all candidates are identical, guaranteeing consistency</button>
+      <button class="qopt" type="button">B · Because generating more candidates makes each individual candidate more accurate</button>
+      <button class="qopt" type="button">C · Because correct candidates tend to converge on the same result set while mistakes scatter - so the biggest cluster is usually right</button>
+      <p class="qwhy">Nondeterminism becomes the asset: N samples turn a weighted coin flip into a readable distribution. Temperature 0 would defeat the purpose (10 identical candidates carry one candidate's information), and each sample is no better alone - the vote is what improves.</p>
+    </div>
+    <div class="quiz-q" data-answer="0">
+      <p class="qtext">2 · What is the cheapest reliable selection signal?</p>
+      <button class="qopt" type="button">A · Execution success plus majority vote on result sets - both free once you have executed the candidates</button>
+      <button class="qopt" type="button">B · An LLM-as-judge ranking every candidate against the schema</button>
+      <button class="qopt" type="button">C · Showing all N candidates to the user and letting them choose</button>
+      <p class="qwhy">You execute the candidates anyway, so "ran without error" and "agrees with the most siblings" cost nothing extra. The judge costs another model call - save it for ties. Shipping N raw candidates to a business user defeats the product.</p>
+    </div>
+    <div class="quiz-q" data-answer="1">
+      <p class="qtext">3 · What is the honest cost tradeoff of N-candidate generation?</p>
+      <button class="qopt" type="button">A · There is none - candidates run in parallel, so the cost is the same as one query</button>
+      <button class="qopt" type="button">B · N times the generation tokens plus N executions per question - worth it for high-stakes numbers, wasteful for casual exploration</button>
+      <button class="qopt" type="button">C · Only latency - token and warehouse costs are unaffected by N</button>
+      <p class="qwhy">Parallelism helps latency, not the bill: every candidate is paid for in tokens and in warehouse execution. That is why the pattern is a dial - Salesforce spent it where wrong answers cost more than compute, and adaptive N keeps exploration cheap.</p>
+    </div>
+    <p class="quiz-score"></p>
+  </section>
+
+  <!-- ============ CHEAT SHEET ============ -->
+  <section class="cheat" id="cheatsheet">
+    <h3>Builder session 7 cheat sheet <span>· pin this</span></h3>
+    <div class="grid-2">
+      <div class="cheat-item"><b>The trick</b><span>Generate N candidates at temperature 0.7-1.0, execute all, score or vote, return the best. Nondeterminism becomes an asset.</span></div>
+      <div class="cheat-item"><b>The number</b><span>Salesforce (vendor-reported): ~50% at launch → ~80% with 10 candidates per question plus scoring.</span></div>
+      <div class="cheat-item"><b>Research twin</b><span>CHASE-SQL: divide-and-conquer generates genuinely diverse candidates, then a selection stage picks.</span></div>
+      <div class="cheat-item"><b>Self-consistency</b><span>Group candidates by result set; biggest cluster wins. Measures agreement, not truth - shared context gaps fool it.</span></div>
+      <div class="cheat-item"><b>Selection funnel</b><span>Execution filter (free) → majority vote (free) → LLM-as-judge (one more call, ties only). Calibrate the judge (learn-evals).</span></div>
+      <div class="cheat-item"><b>Cost math</b><span>N candidates = N x generation tokens + N executions, per question. A dial, not a default; adaptive N for governed metrics.</span></div>
+      <div class="cheat-item"><b>Why result sets</b><span>Different SQL text, same rows = equally correct. Vote and EX both compare results, never strings (your CTE twin proved it).</span></div>
+      <div class="cheat-item"><b>Saturation note</b><span>Our 12-question set is already 12/12, so the pattern adds nothing here. Real sets are never saturated - b8 measures that honestly.</span></div>
+    </div>
+  </section>
+
+  <footer class="pagefoot">
+    <span>Builder session 7 of 10 · learn-text-to-sql-with-phoebe · by Phoebe Fu &nbsp;·&nbsp; 📚 <a href="https://phoebefu6.github.io/learn-with-phoebe/">Learn with Phoebe ↗</a></span>
+    <span><a href="b6-self-correction.html">← Prev: Self-correction</a> &nbsp;·&nbsp; <a href="../index.html">All sessions</a> &nbsp;·&nbsp; <a href="b8-evaluation.html">Next: Evaluating your agent →</a></span>
+  </footer>
+
+</main>
+
+<script src="../assets/daybreak-seed.js?v=1"></script>
+<script src="../assets/sql-wasm.js?v=1"></script>
+<script src="../assets/sql-live.js?v=1"></script>
+<script src="../assets/t2sql-live.js?v=2"></script>
+<script src="../assets/app.js?v=1"></script>
+</body>
+</html>
