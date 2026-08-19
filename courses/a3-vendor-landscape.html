@@ -45,6 +45,39 @@
       <h2>The buy-side session</h2>
     </div>
     <p class="lede">You will not build a text-to-SQL system - you will buy one, or approve someone who does. That makes your job vendor triage: seeing past demo polish and non-comparable benchmarks to the two questions that actually predict success - where does the data go, and who pays the curation tax (session a4). This session gives you the landscape and the bake-off discipline to choose well.</p>
+<figure class="zoomable">
+  <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A bar chart comparing vendor-reported text-to-SQL accuracy claims: Databricks Genie ranges from 32 percent to over 90 percent depending on curation, Snowflake Cortex Analyst claims over 90 percent, and a single-shot GPT-4o baseline scored 51 percent on the same 150-question benchmark.">
+    <style>
+      .vlbT { font: 700 13px Inter, sans-serif; fill: #10222E; }
+      .vlbL { font: 600 12px Inter, sans-serif; fill: #10222E; }
+      .vlbV { font: 700 12px Inter, sans-serif; fill: #FFFFFF; }
+      .vlbVO { font: 700 12px Inter, sans-serif; fill: #10222E; }
+      .vlbN { font: 400 12px Inter, sans-serif; fill: #526472; }
+    </style>
+    <rect x="0" y="0" width="880" height="300" fill="#F7FBFD"/>
+    <text class="vlbT" x="40" y="28">Every "90%+" claim is on the vendor's own benchmark</text>
+
+    <text class="vlbL" x="240" y="90" text-anchor="end">Genie (low, before curation)</text>
+    <rect x="260" y="70" width="154" height="30" rx="6" fill="#AEC4D2"/>
+    <text class="vlbVO" x="424" y="90">32%</text>
+
+    <text class="vlbL" x="240" y="142" text-anchor="end">Genie (curated, claimed)</text>
+    <rect x="260" y="122" width="432" height="30" rx="6" fill="#0F80CC"/>
+    <text class="vlbV" x="272" y="142">90%+</text>
+
+    <text class="vlbL" x="240" y="194" text-anchor="end">Cortex Analyst (claimed)</text>
+    <rect x="260" y="174" width="432" height="30" rx="6" fill="#0F80CC"/>
+    <text class="vlbV" x="272" y="194">90%+</text>
+
+    <text class="vlbL" x="240" y="246" text-anchor="end">Single-shot GPT-4o baseline</text>
+    <rect x="260" y="226" width="245" height="30" rx="6" fill="#F5A623"/>
+    <text class="vlbV" x="272" y="246">51%</text>
+
+    <text class="vlbN" x="40" y="276">Genie swung from 32% to 90%+ on remodeling alone - the tool never changed, the curation did.</text>
+  </svg>
+  <figcaption>🔍 Click to zoom - the vendor number is a ceiling reached only after heavy curation</figcaption>
+</figure>
+
     <div class="legend">
       <span class="pill solid">Live - presented in session</span>
       <span class="pill light">Self-study - read after class</span>
@@ -84,6 +117,35 @@
       <summary><span class="mode live">Live</span>The one thing both have in common: heavy curation<span class="mini">4 min</span><span class="caret">▶</span></summary>
       <div class="body">
         <p>Neither tool works out of the box, and both vendors quietly admit it. A fresh Genie space was reported to score <strong>8/15 (53%)</strong> before systematic remodeling brought it to 15/15. Cortex Analyst's accuracy lives or dies on the quality of the YAML semantic model a human writes. The tool is the cheap part - the metadata and metric definitions are the real project, which is exactly session a4's curation tax.</p>
+<figure class="zoomable">
+  <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A before and after comparison showing a fresh Databricks Genie space scoring 8 out of 15 questions correct, 53 percent, before systematic remodeling, and 15 out of 15, 100 percent, after the room was rebuilt with curated tables and example queries.">
+    <style>
+      .a3baT { font: 700 13px Inter, sans-serif; fill: #10222E; }
+      .a3baHA { font: 700 13px Inter, sans-serif; fill: #4A2E00; }
+      .a3baHB { font: 700 13px Inter, sans-serif; fill: #003B57; }
+      .a3baB { font: 400 12px Inter, sans-serif; fill: #10222E; }
+      .a3baN { font: 400 12px Inter, sans-serif; fill: #526472; }
+    </style>
+    <rect x="0" y="0" width="880" height="300" fill="#F7FBFD"/>
+    <text class="a3baT" x="40" y="28">A fresh Genie space before and after systematic remodeling</text>
+
+    <rect x="40" y="50" width="390" height="180" rx="12" fill="#FEF3E0" stroke="#F5A623" stroke-width="1.6"/>
+    <text class="a3baHA" x="58" y="84">Before: fresh Genie space</text>
+    <text class="a3baB" x="58" y="114">8 of 15 questions correct</text>
+    <text class="a3baB" x="58" y="134">No curated rooms yet</text>
+    <text class="a3baB" x="58" y="154">Score: 53%</text>
+
+    <rect x="450" y="50" width="390" height="180" rx="12" fill="#E9F4FB" stroke="#0F80CC" stroke-width="1.6"/>
+    <text class="a3baHB" x="468" y="84">After: systematic remodeling</text>
+    <text class="a3baB" x="468" y="114">15 of 15 questions correct</text>
+    <text class="a3baB" x="468" y="134">Curated tables + examples</text>
+    <text class="a3baB" x="468" y="154">Score: 100%</text>
+
+    <text class="a3baN" x="40" y="276">Same tool, same schema - the metadata and example queries were the entire project.</text>
+  </svg>
+  <figcaption>🔍 Click to zoom - the tool is the cheap part, the curation project takes it from 53% to 100%</figcaption>
+</figure>
+
         <ul>
           <li><strong>Genie's own recipe:</strong> 3-7 tables per room, 3-5 trusted example queries, roughly two weeks of iteration before it is trustworthy.</li>
           <li><strong>Cortex's lever:</strong> the semantic model. A rich, correct YAML is where the 90% claim comes from; a thin one lands far lower.</li>

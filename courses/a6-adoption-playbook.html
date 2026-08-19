@@ -112,6 +112,35 @@
         <div class="callout example">
           <span class="ex-pill">Real world</span>
           <p><strong>The rollout that survived.</strong> A data leader scoped a pilot to five finance tables and twenty golden questions, reported one accuracy number in the Monday standup, and refused to expand until it cleared 90% with zero silent failures on the revenue questions. It took six weeks and looked slow. The parallel team that opened the whole warehouse "for feedback" hit 30%, lost the executive sponsor by week three, and never recovered. Small and measured beat big and hopeful.</p>
+<figure class="zoomable">
+  <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A before and after comparison of two pilots: the team that opened the whole warehouse for feedback hit 30 percent accuracy and lost its executive sponsor by week three, while the team that scoped to five finance tables and twenty golden questions cleared 90 percent accuracy with zero silent failures and survived.">
+    <style>
+      .pilT { font: 700 13px Inter, sans-serif; fill: #10222E; }
+      .pilHA { font: 700 13px Inter, sans-serif; fill: #991B1B; }
+      .pilHB { font: 700 13px Inter, sans-serif; fill: #003B57; }
+      .pilB { font: 400 12px Inter, sans-serif; fill: #10222E; }
+      .pilN { font: 400 12px Inter, sans-serif; fill: #526472; }
+    </style>
+    <rect x="0" y="0" width="880" height="300" fill="#F7FBFD"/>
+    <text class="pilT" x="40" y="28">Small and measured beat big and hopeful</text>
+
+    <rect x="40" y="50" width="390" height="180" rx="12" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="1.6"/>
+    <text class="pilHA" x="58" y="84">✗ Whole warehouse, "for feedback"</text>
+    <text class="pilB" x="58" y="114">No table scope named</text>
+    <text class="pilB" x="58" y="134">Accuracy hit only 30%</text>
+    <text class="pilB" x="58" y="154">Lost sponsor by week 3</text>
+
+    <rect x="450" y="50" width="390" height="180" rx="12" fill="#E9F4FB" stroke="#0F80CC" stroke-width="1.6"/>
+    <text class="pilHB" x="468" y="84">✓ Five finance tables, 20 questions</text>
+    <text class="pilB" x="468" y="114">Golden set of 20 questions</text>
+    <text class="pilB" x="468" y="134">Cleared 90% accuracy</text>
+    <text class="pilB" x="468" y="154">Zero silent failures - survived</text>
+
+    <text class="pilN" x="40" y="276">Six weeks and it looked slow - but it was still running when the big-warehouse team was gone.</text>
+  </svg>
+  <figcaption>🔍 Click to zoom - five tables and twenty questions beat the whole warehouse</figcaption>
+</figure>
+
         </div>
       </div>
     </details>
@@ -125,7 +154,47 @@
     </div>
     <p class="lede">Not every organization should move now. The honest framework has three doors, and "wait" is often the right one - because a text-to-SQL tool pointed at undefined metrics just automates wrong answers faster.</p>
 
-    <table class="clean">
+    
+<figure class="zoomable">
+  <svg viewBox="0 0 880 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A decision map of three adoption doors: buy the native tool when data already lives in Databricks or Snowflake and the domain is defined, build your own pipeline when you need to embed chat-with-data or have governance needs no vendor meets, and wait and define metrics first when nobody can agree what counts as revenue.">
+    <style>
+      .a6dT { font: 700 13px Inter, sans-serif; fill: #10222E; }
+      .a6dH { font: 700 12px Inter, sans-serif; fill: #003B57; }
+      .a6dB { font: 400 11px Inter, sans-serif; fill: #526472; }
+      .a6dN { font: 400 12px Inter, sans-serif; fill: #526472; }
+    </style>
+    <rect x="0" y="0" width="880" height="340" fill="#F7FBFD"/>
+    <text class="a6dT" x="40" y="28">Three doors: buy, build, or wait</text>
+
+    <rect x="40" y="60" width="250" height="150" rx="10" fill="#E9F4FB" stroke="#0F80CC" stroke-width="1.4"/>
+    <text class="a6dH" x="60" y="90">Buy</text>
+    <text class="a6dB" x="60" y="116">Data already lives in</text>
+    <text class="a6dB" x="60" y="132">Databricks or Snowflake,</text>
+    <text class="a6dB" x="60" y="148">domain is defined</text>
+    <text class="a6dB" x="60" y="174">Commits: native tool +</text>
+    <text class="a6dB" x="60" y="190">curation hours</text>
+
+    <rect x="315" y="60" width="250" height="150" rx="10" fill="#E9F4FB" stroke="#0F80CC" stroke-width="1.4"/>
+    <text class="a6dH" x="335" y="90">Build</text>
+    <text class="a6dB" x="335" y="116">Need chat-with-data in</text>
+    <text class="a6dB" x="335" y="132">your product, or governance</text>
+    <text class="a6dB" x="335" y="148">no vendor meets</text>
+    <text class="a6dB" x="335" y="174">Commits: an engineering</text>
+    <text class="a6dB" x="335" y="190">team, forever</text>
+
+    <rect x="590" y="60" width="250" height="150" rx="10" fill="#FEF3E0" stroke="#F5A623" stroke-width="1.4"/>
+    <text class="a6dH" x="610" y="90">Wait</text>
+    <text class="a6dB" x="610" y="116">No metric definitions</text>
+    <text class="a6dB" x="610" y="132">written anywhere; nobody</text>
+    <text class="a6dB" x="610" y="148">owns "what counts as revenue"</text>
+    <text class="a6dB" x="610" y="174">Commits: define metrics</text>
+    <text class="a6dB" x="610" y="190">before any tool</text>
+
+    <text class="a6dN" x="40" y="316">The tool decision is easy - the curation and metric-definition commitment is the real budget line.</text>
+  </svg>
+  <figcaption>🔍 Click to zoom - wait is not defeat, it is paying the curation tax before the tool</figcaption>
+</figure>
+<table class="clean">
       <thead><tr><th>Door</th><th>Choose it when</th><th>What it commits you to</th></tr></thead>
       <tbody>
         <tr><td><strong>Buy</strong></td><td>Your data already lives in Databricks or Snowflake, and you want standard self-serve for a defined domain</td><td>The native tool (Genie / Cortex) plus the curation hours to feed it - the tool is cheap, the semantic model is the work</td></tr>
